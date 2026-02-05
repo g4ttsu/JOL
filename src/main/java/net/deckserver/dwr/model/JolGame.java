@@ -13,6 +13,7 @@ import net.deckserver.services.ChatService;
 import net.deckserver.services.GameService;
 import net.deckserver.services.ParserService;
 import net.deckserver.storage.json.cards.CardSummary;
+import net.deckserver.storage.json.game.PlayedCard;
 import net.deckserver.storage.json.deck.Deck;
 import net.deckserver.storage.json.game.CardData;
 import net.deckserver.storage.json.game.GameData;
@@ -367,9 +368,17 @@ public record JolGame(String id, GameData data) {
         return data.getNotes();
     }
 
+    public List<PlayedCard> getPlayedCards() {
+        if(data.getPlayedCards()==null) {
+            data.setPlayedCards(new ArrayList<>());
+        }
+        return data.getPlayedCards();
+    }
+
     public void setGlobalText(String text) {
         data.setNotes(text);
     }
+    public void setPlayedCards(List<PlayedCard> playedCards) { data.setPlayedCards(playedCards); }
 
     public String getPrivateNotes(String player) {
         return Optional.ofNullable(data.getPlayer(player)).map(PlayerData::getNotes).orElse("");

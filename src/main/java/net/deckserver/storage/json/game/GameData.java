@@ -12,7 +12,7 @@ import net.deckserver.game.enums.RegionType;
 import java.util.*;
 
 @Data
-@JsonPropertyOrder({"id", "name", "playerOrder", "orderOfPlayReversed", "turn", "phase", "notes", "cards", "players", "currentPlayer", "edge"})
+@JsonPropertyOrder({"id", "name", "playerOrder", "orderOfPlayReversed", "turn", "phase", "notes", "cards", "players", "currentPlayer", "edge", "playedCards"})
 @ToString(of = {"id", "name"})
 @NoArgsConstructor
 public class GameData {
@@ -33,6 +33,7 @@ public class GameData {
     private String turn = "1.1";
     private Phase phase;
     private String notes;
+    private List<PlayedCard> playedCards;
 
     private String timeoutRequestor;
 

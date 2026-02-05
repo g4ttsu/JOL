@@ -6,13 +6,12 @@
 
 package net.deckserver.dwr.model;
 
+import net.deckserver.game.enums.*;
+import net.deckserver.game.validators.OncePerGameValidator;
 import net.deckserver.services.CardService;
-import net.deckserver.game.enums.Clan;
-import net.deckserver.game.enums.Path;
-import net.deckserver.game.enums.RegionType;
-import net.deckserver.game.enums.Sect;
 import net.deckserver.services.ParserService;
 import net.deckserver.storage.json.cards.CardSummary;
+import net.deckserver.storage.json.game.PlayedCard;
 import net.deckserver.storage.json.game.CardData;
 
 import java.util.*;
@@ -363,6 +362,11 @@ public record DoCommand(JolGame game, GameModel model) {
         boolean draw = cmdObj.consumeString("draw");
         game.playCard(player, srcCard.getId(), targetPlayer, targetRegion, targetCardId, modes);
         if (draw) game.drawCard(player, RegionType.LIBRARY, RegionType.HAND);
+
+        //check if a card relevant for the record played card add it to the Game played Cards
+        if(OncePerGameValidator.validate(srcCard)) {
+            model.updatePlayedCards(new PlayedCard(srcCard.getCardId(), srcCard.getName(), player, game.getCurrentTurn()));
+        }
     }
 
     void edge(CommandParser cmdObj, String player) throws CommandException {
