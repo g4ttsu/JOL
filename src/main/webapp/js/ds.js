@@ -642,6 +642,11 @@ function callbackShowGameDeck(data) {
     addCardTooltips("#gameDeck");
 }
 
+function callbackShowPlayedCard(data) {
+    renderPlayedCards(data, "#gamePlayedCards");
+    addCardTooltips("#gamePlayedCards");
+}
+
 function callbackMain(data) {
     if (data.loggedIn) {
         renderOnline('onlinePlayers', data.who);
@@ -694,6 +699,37 @@ function renderDeck(data, div) {
             render.append(section);
         })
     }
+}
+
+function renderPlayedCards(playedCards, div) {
+    let render = $(div);
+    render.empty()
+    let ul =$("<ul/>").addClass("list-group");
+    playedCards.forEach((card) => {
+        let cardRow = $("<li/>").addClass("list-group p-2 border").append();
+        let div = $("<div/>").addClass("justify-content-between d-flex");
+        let cardLink = $("<a/>").text(card.cardName).attr("data-card-id", card.cardId).addClass("card-name");
+        let played = $("<span/>").text("played by");
+        let playerName = $("<span/>").text(card.playerName).addClass("fw-bold");
+        let turn = $("<span/>").text("on turn");
+        let turnNumber= $("<span/>").text(card.turnNumber).addClass("fw-bold");
+        let button = $("<button>/")
+            .click(function () {
+                removePlayedCard(card.cardName, card.playerName, card.turnNumber);
+            }).addClass("border-0 bg-white")
+            .append($("<i/>").addClass("bi bi-trash"));
+        div.append(cardLink);
+        div.append(played).append(playerName).append(turn).append(turnNumber);
+        div.append(button);
+        cardRow.append(div);
+        ul.append(cardRow);
+    })
+    render.append(ul);
+}
+
+function removePlayedCard(cardName, playerName, turnNumber) {
+    DS.removePlayedCard(cardName, playerName, turnNumber, game);
+    DS.getPlayedCards(game, {callback: callbackShowPlayedCard, errorHandler: errorhandler});
 }
 
 function parseDeck() {
@@ -1094,6 +1130,10 @@ function doShowDeck() {
         DS.getGameDeck(game, {callback: callbackShowGameDeck, errorHandler: errorhandler});
 }
 
+function doShowPlayedCards() {
+    DS.getPlayedCards(game, {callback: callbackShowPlayedCard, errorHandler: errorhandler});
+}
+
 function doEndTurn() {
     if (confirm("Are you sure you want to end your turn?")) {
         DS.endPlayerTurn(game, {callback: processData, errorHandler: errorhandler});
@@ -1156,6 +1196,12 @@ function toggleNotes() {
     if ($("#gameDeck").children().length === 0) {
         doShowDeck();
     }
+}
+
+function togglePlayedCards() {
+    $("#notesCard").toggleClass("d-none");
+    $("#gamePlayedCard").toggleClass("d-none");
+    doShowPlayedCards();
 }
 
 function loadGame(data) {

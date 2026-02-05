@@ -9,6 +9,7 @@
         <jsp:include page="history.jsp"/>
         <jsp:include page="notes.jsp"/>
         <jsp:include page="game-deck.jsp"/>
+        <jsp:include page="game-played-cards.jsp"/>
     </div>
     <div class="row gx-2">
         <div class="col-12 row gy-1 gx-2" id="state"></div>

@@ -9,6 +9,7 @@ import net.deckserver.dwr.model.GameView;
 import net.deckserver.dwr.model.PlayerModel;
 import net.deckserver.game.enums.GameFormat;
 import net.deckserver.services.*;
+import net.deckserver.storage.json.game.PlayedCard;
 import net.deckserver.storage.json.deck.Deck;
 import net.deckserver.storage.json.deck.ExtendedDeck;
 import net.deckserver.storage.json.game.ChatData;
@@ -177,6 +178,38 @@ public class DeckserverRemote {
             return JolAdmin.getGameDeck(gameName, playerName);
         }
         return null;
+    }
+
+    /**
+     * Get all Played Cards for a certain game
+     * @param gameName
+     * @return
+     */
+    public List<PlayedCard> getPlayedCards(String gameName) {
+        if (gameName != null) {
+            return GameService.getGameByName(gameName).getPlayedCards();
+        }
+        return null;
+    }
+
+    /**
+     * removes the first matching card from the PlayedCard Array
+     * @param cardName - played card name
+     * @param playerName - player who played card
+     * @param turnNumber - turn in which the card has been played
+     * @param gameName - game name to identify the correct game
+     */
+    public void removePlayedCard(String cardName, String playerName, String turnNumber, String gameName) {
+        List<PlayedCard> playedCards = GameService.getGameByName(gameName).getPlayedCards();
+        boolean stillNeedToRemove = true;
+        for(PlayedCard card : playedCards) {
+            if(stillNeedToRemove && card.getCardName().equals(cardName) &&
+                    card.getPlayerName().equals(playerName) &&
+                    card.getTurnNumber().equals(turnNumber)) {
+                playedCards.remove(card);
+                stillNeedToRemove = false;
+            }
+        }
     }
 
     public Set<String> getGamePlayers(String gameName) {

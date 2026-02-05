@@ -6,6 +6,7 @@ import net.deckserver.game.enums.Phase;
 import net.deckserver.services.ChatService;
 import net.deckserver.services.GameService;
 import net.deckserver.services.RegistrationService;
+import net.deckserver.storage.json.game.PlayedCard;
 import net.deckserver.storage.json.game.ChatData;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -134,6 +135,16 @@ public class GameModel implements Comparable<GameModel> {
         }
     }
 
+    /**
+     * Add a played Card to a Game and persist game state
+     * @param playedCard
+     */
+    public void updatePlayedCards(PlayedCard playedCard) {
+        JolGame game = GameService.getGameByName(name);
+        game.getPlayedCards().add(playedCard);
+        JolAdmin.saveGameState(game);
+    }
+
     public void updatePrivateNotes(String player, String notes) {
         JolGame game = GameService.getGameByName(name);
         if (!notes.equals(game.getPrivateNotes(player))) {
@@ -171,5 +182,4 @@ public class GameModel implements Comparable<GameModel> {
             view.privateNotesChanged();
         }
     }
-
 }

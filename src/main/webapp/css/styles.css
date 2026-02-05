@@ -350,6 +350,10 @@ a.card-name {
     height: 50%;
 }
 
+#gamePlayedCard {
+    grid-area: info;
+}
+
 #gameDeckCard {
     grid-area: info;
 }
