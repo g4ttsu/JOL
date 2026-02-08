@@ -999,10 +999,11 @@ function renderPastGames(history) {
         let firstPlayerRow = true;
         $.each(game.results, function (i, value) {
             let playerRow = $("<tr/>");
+            const playerCount = game.results.length;
             if (firstPlayerRow) {
-                let gameName = $("<td/>").attr('rowspan', game.results.length).text(game.name);
-                let gameStarted = $("<td/>").attr('rowspan', game.results.length).text(startTime);
-                let gameFinished = $("<td/>").attr('rowspan', game.results.length).text(endTime);
+                let gameName = $("<td/>").attr('rowspan', playerCount).text(game.name);
+                let gameStarted = $("<td/>").attr('rowspan', playerCount).text(startTime);
+                let gameFinished = $("<td/>").attr('rowspan', playerCount).text(endTime);
                 playerRow.append(gameName, gameStarted, gameFinished);
                 playerRow.addClass("border-3 border-top border-bottom-0 border-start-0 border-end-0")
                 firstPlayerRow = false;
@@ -1016,7 +1017,18 @@ function renderPastGames(history) {
             playerRow.append(playerName, deckName, score);
             pastGames.append(playerRow);
         })
+        pastGames.append($("<a/>").text(game.name).on('click', function () {
+            doNav("g" + game.name);
+        }));
+        // pastGames.append($("<button/>").text("Replay Game").click(function () {
+        //     renderGameLink(game.name);
+        // }).addClass("border bg-white")
+        //     .append($("<i/>").addClass("bi bi-play")));
     })
+}
+
+function replayGame(gameName) {
+
 }
 
 function navigate(data) {
