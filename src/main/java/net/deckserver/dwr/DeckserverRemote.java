@@ -378,6 +378,11 @@ public class DeckserverRemote {
         return UpdateFactory.getUpdate();
     }
 
+    public Map<String, Object> recordPlayerAccess(String player, String game) {
+        PlayerGameActivityService.recordPlayerAccess(player,game);
+        return UpdateFactory.getUpdate();
+    }
+
     private GameView getView(String name) {
         String player = getPlayer(request);
         return getModel(name).getView(player);

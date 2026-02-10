@@ -655,6 +655,16 @@ function callbackMain(data) {
     }
 }
 
+function clearBellsOusted() {
+    $("#oustedGames li").each(function(index, game) {
+        DS.recordPlayerAccess(player, game.id, {callback: processData, errorHandler: errorhandler})});
+}
+
+function clearBellsActive() {
+    $("#myGames li").each(function(index, game) {
+        DS.recordPlayerAccess(player, game.id, {callback: processData, errorHandler: errorhandler})});
+}
+
 function renderDeck(data, div) {
     let render = $(div);
     render.empty();
@@ -896,7 +906,7 @@ function renderMyGames(id, games) {
     let ownGames = $(id);
     ownGames.empty();
     $.each(games, function (index, game) {
-        let gameRow = $("<li/>").addClass("list-group-item p-0 border").on('click', function () {
+        let gameRow = $("<li/>").attr("id", game.name).addClass("list-group-item p-0 border").on('click', function () {
             doNav("g" + game.name);
         });
         let header = $("<div/>").addClass("d-flex p-2 justify-content-between w-100 border-bottom bg-body-tertiary");
