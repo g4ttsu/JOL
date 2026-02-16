@@ -12,6 +12,8 @@ import net.deckserver.services.*;
 import net.deckserver.storage.json.deck.Deck;
 import net.deckserver.storage.json.deck.ExtendedDeck;
 import net.deckserver.storage.json.game.ChatData;
+import net.deckserver.storage.json.game.PlayerStat;
+import net.deckserver.storage.json.game.PlayerStatsData;
 import net.deckserver.storage.json.system.DeckInfo;
 import net.deckserver.storage.json.system.GameHistory;
 import net.deckserver.storage.json.system.PlayerResult;
@@ -26,6 +28,7 @@ import java.io.StringWriter;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DeckserverRemote {
 
@@ -409,6 +412,35 @@ public class DeckserverRemote {
             }
         }
         return writer.toString();
+    }
+
+    public List<PlayerStatsData> generatePlayerData() {
+        Map<OffsetDateTime, GameHistory> history = HistoryService.getHistory();
+        List<PlayerStat> playerStats = new ArrayList<>();
+        history.values().stream().forEach(game -> {
+            game.getResults().forEach(player-> {
+                String gameName = game.getName();
+                //OffsetDateTime startTime = OffsetDateTime.parse(game.getStarted(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"));
+                //OffsetDateTime endTime = OffsetDateTime.parse(game.getEnded(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"));
+                String deckName = player.getDeckName();
+                String playerName = player.getPlayerName();
+                boolean gameWin = player.isGameWin();
+                double vp = player.getVictoryPoints();
+                playerStats.add(new PlayerStat(gameName, null, null, deckName, playerName, gameWin, vp));
+            });
+        });
+
+        return playerStats.stream()
+                .collect(Collectors.groupingBy(PlayerStat::getPlayerName))
+                .entrySet()
+                .stream()
+                .map(entry -> {
+                    String playerName = entry.getKey();
+                    long allGames = entry.getValue().size();
+                    double vp = entry.getValue().stream().mapToDouble(PlayerStat::getVp).sum();
+                    int gw = entry.getValue().stream().filter(game -> game.isGameWin()).collect(Collectors.toList()).size();
+                    return new PlayerStatsData(playerName, allGames, vp, gw);
+                }).collect(Collectors.toList());
     }
 
     private GameView getView(String name) {

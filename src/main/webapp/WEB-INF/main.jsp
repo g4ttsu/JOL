@@ -60,6 +60,10 @@
             <jsp:include page="/WEB-INF/jsps/tournament/layout.jsp"/>
         </div>
 
+        <div id="statistics" style="display: none">
+            <jsp:include page="/WEB-INF/jsps/statistics/layout.jsp"/>
+        </div>
+
         <div id="profile" style="display:none">
             <jsp:include page="/WEB-INF/jsps/profile/layout.jsp"/>
         </div>

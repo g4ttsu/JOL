@@ -1019,6 +1019,19 @@ function renderPastGames(history) {
     })
 }
 
+function createStats(stats) {
+    let playerStats = $("#playerStats tbody");
+    playerStats.empty();
+    $.each(stats, function (index, game) {
+        let playerRow = $("<tr/>");
+        let playerName = $("<td/>").text(game.playerName);
+        let allGames = $("<td/>").text(game.allGames);
+        playerRow.append(playerName, allGames);
+        playerStats.append(playerRow);
+    })
+}
+
+
 function navigate(data) {
     if (data.target !== currentPage) {
         $("#" + currentPage).hide();
@@ -1474,6 +1487,10 @@ function toggleMobileView(event) {
 
 function exportCsv() {
     DS.exportPastGamesAsCsv({callback: createCsvDownloadLink, errorHandler: errorhandler});
+}
+
+function renderStats() {
+    DS.generatePlayerData({callback: createStats, errorHandler: errorhandler});
 }
 
 function createCsvDownloadLink(data) {

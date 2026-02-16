@@ -38,6 +38,7 @@ public class NavBean {
             buttons.add("profile:Profile");
             buttons.add("lobby:Lobby");
             buttons.add("tournament:Tournament");
+            buttons.add("statistics:Statistics");
             if (isAdmin) {
                 buttons.add("admin:Admin");
             }
