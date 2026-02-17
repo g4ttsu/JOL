@@ -111,6 +111,10 @@
     /*    !*line-height: 19px;*!*/
     /*}*/
 
+    .icon img {
+        background-color: white;
+    }
+
     /*
         Text -> #dee2e6
         BG Body -> #25292b

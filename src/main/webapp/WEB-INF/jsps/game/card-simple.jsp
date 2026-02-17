@@ -42,7 +42,9 @@
             </span>
             <span class="d-flex gap-1 align-items-center">
                 <span class="badge bg-light text-black shadow border-secondary-subtle"><%= label %></span>
-                <span class="icon card-type <%= typeClass%>"></span>
+                <span class="icon card-type <%= typeClass%>">
+                    <img width="20" height="20" src="<%= System.getenv().getOrDefault("BASE_URL", "https://static.dev.deckserver.net") %>/${secured}images/<%= typeClass%>.svg"/>
+                </span>
                 <c:if test="<%= cardSummary.hasBlood() %>">
                     <span>
                         <c:forEach items="<%= clans %>" var="clan">

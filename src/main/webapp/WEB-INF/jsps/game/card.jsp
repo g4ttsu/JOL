@@ -73,7 +73,9 @@
                 </div>
                 <div class="d-flex align-items-center gap-1">
                     <c:forEach items="<%= disciplines %>" var="disc">
-                        <span class="icon ${disc}"></span>
+                        <span class="icon ${disc}">
+                            <img width="20" height="20" src="<%= System.getenv().getOrDefault("BASE_URL", "https://static.dev.deckserver.net") %>/${secured}images/${disc}.svg"/>
+                        </span>
                     </c:forEach>
                 </div>
                 <div class="d-flex align-items-center gap-1">

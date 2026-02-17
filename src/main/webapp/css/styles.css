@@ -622,45 +622,45 @@ a.card-name {
     font-size: 1.3rem;
 }
 
-.icon.card-type.action:before {
-    content: '0';
-}
+/*.icon.card-type.action:before {*/
+/*    content: '0';*/
+/*}*/
 
-.icon.card-type.action_modifier:before {
-    content: '1';
-}
+/*.icon.card-type.action_modifier:before {*/
+/*    content: '1';*/
+/*}*/
 
-.icon.card-type.political_action:before {
-    content: '2';
-}
+/*.icon.card-type.political_action:before {*/
+/*    content: '2';*/
+/*}*/
 
-.icon.card-type.ally:before {
-    content: '3';
-}
+/*.icon.card-type.ally:before {*/
+/*    content: '3';*/
+/*}*/
 
-.icon.card-type.combat:before {
-    content: '4';
-}
+/*.icon.card-type.combat:before {*/
+/*    content: '4';*/
+/*}*/
 
-.icon.card-type.equipment:before {
-    content: '5';
-}
+/*.icon.card-type.equipment:before {*/
+/*    content: '5';*/
+/*}*/
 
-.icon.card-type.reflex:before {
-    content: '6';
-}
+/*.icon.card-type.reflex:before {*/
+/*    content: '6';*/
+/*}*/
 
-.icon.card-type.reaction:before {
-    content: '7';
-}
+/*.icon.card-type.reaction:before {*/
+/*    content: '7';*/
+/*}*/
 
-.icon.card-type.retainer:before {
-    content: '8';
-}
+/*.icon.card-type.retainer:before {*/
+/*    content: '8';*/
+/*}*/
 
-.icon.card-type.master:before {
-    content: '9';
-}
+/*.icon.card-type.master:before {*/
+/*    content: '9';*/
+/*}*/
 
 .icon.card-type.action_modifier.reaction:before {
     content: '17';
@@ -682,9 +682,9 @@ a.card-name {
     content: "04";
 }
 
-.icon.card-type.event:before {
-    content: "[";
-}
+/*.icon.card-type.event:before {*/
+/*    content: "[";*/
+/*}*/
 
 .icon.adv:before {
     font-style: normal;
@@ -762,13 +762,13 @@ a.card-name {
     content: 'H';
 }
 
-.icon.ani:before {
-    content: 'i';
-}
+/*.icon.ani:before {*/
+/*    content: 'i';*/
+/*}*/
 
-.icon.ANI:before {
-    content: 'I';
-}
+/*.icon.ANI:before {*/
+/*    content: 'I';*/
+/*}*/
 
 .icon.pro:before {
     content: 'j';
