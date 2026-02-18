@@ -646,8 +646,8 @@ function callbackMain(data) {
     if (data.loggedIn) {
         renderOnline('onlinePlayers', data.who);
         renderGlobalChat(data.chat);
-        renderMyGames("#myGames", data.games);
-        renderMyGames("#oustedGames", data.ousted);
+        renderMyGames("myGames", data.games);
+        renderMyGames("oustedGames", data.ousted);
         if (refresher) clearTimeout(refresher);
         refresher = setTimeout("DS.doPoll({callback: processData, errorHandler: errorhandler})", 5000);
     } else {
@@ -893,8 +893,11 @@ function toggleDetailedMode(elem) {
 
 function renderMyGames(id, games) {
     let checked = localStorage.getItem("jol-details") || "true";
-    let ownGames = $(id);
+    let ownGames = $("#"+id);
+    let headerText = id === "myGames" ? "Active Games" : "Ousted Games";
     ownGames.empty();
+    $("#"+id+"-header").text(headerText+" ("+games.length+"):");
+
     $.each(games, function (index, game) {
         let gameRow = $("<li/>").addClass("list-group-item p-0 border").on('click', function () {
             doNav("g" + game.name);
@@ -953,7 +956,7 @@ function renderOnline(div, who) {
     if (who === null) {
         return;
     }
-    $("#online-users-header").replaceWith("<h5 id='online-users-header'>Online Users ("+who.length+"):</h5>");
+    $("#online-users-header").text("Online Users ("+who.length+"):");
     $.each(who, function (index, player) {
         let lastOnline = moment(player.lastOnline).tz("UTC");
         let sinceLastOnline = moment.duration(moment().diff(lastOnline)).asMinutes();
