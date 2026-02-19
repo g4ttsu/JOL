@@ -46,6 +46,7 @@
     // Red: hasBlood || hasCapacity
     String counterStyle = (cardSummary.hasLife() && RegionType.OTHER_VISIBLE_REGIONS.contains(region)) ? "text-bg-success" : ((cardSummary.hasBlood() || hasCapacity) ? "text-bg-danger" : "text-bg-secondary");
     String regionStyle = region == RegionType.TORPOR ? "opacity-75" : "";
+    boolean regionDragDrop = region == RegionType.TORPOR || region == RegionType.READY ? true : false;
     String contestedStyle = contested ? "bg-warning-subtle" : "";
     String counterText = counters + (capacity > 0 ? " / " + capacity : "");
     String attributes = cardDetail.buildAttributes(region, index, true);
@@ -130,4 +131,5 @@
             </c:forEach>
         </ol>
     </div>
+    <c:if test="<%= regionDragDrop %>"><i class="bi bi-grip-vertical" draggable="true"></i></c:if>
 </li>

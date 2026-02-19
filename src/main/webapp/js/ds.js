@@ -1301,6 +1301,34 @@ function loadGame(data) {
         addCardTooltips("#hand");
     }
 
+    // drag and drop
+    $(".region").each(function (index, region) {
+        let regionName = region.id.substring(2);
+        if(region.id.indexOf("READY")>-1 || region.id.indexOf("TORPOR")>-1) {
+            $(region).sortable({
+                handle: ".bi-grip-vertical",
+                start: function (event, ui) {
+                    ui.item.parent("ol").children("li").each(function (index, li) {
+                        if(li===ui.item[0]) {
+                            ui.item.attr("oldPos", index);
+                        }
+                    });
+                },
+                stop: function (event, ui) {
+                    let playerName = ui.item.closest(".player").attr("data-player");
+                    let newPos;
+                    ui.item.parent("ol").children("li").each(function (index, li) {
+                        if(li===ui.item[0]) {
+                            newPos = index;
+                        }
+                    });
+                    DS.updateRegion(data.name, playerName, regionName, ui.item.attr("oldPos"), newPos, {callback: processData, errorHandler: errorhandler});
+                }
+            });
+            $(region).disableSelection();
+        }
+    });
+
     // Setup polling
     if (refresher) clearTimeout(refresher);
     if (data.refresh > 0 || fetchFullLog) {

@@ -6,12 +6,16 @@ import net.deckserver.dwr.bean.DeckInfoBean;
 import net.deckserver.dwr.creators.UpdateFactory;
 import net.deckserver.dwr.model.GameModel;
 import net.deckserver.dwr.model.GameView;
+import net.deckserver.dwr.model.JolGame;
 import net.deckserver.dwr.model.PlayerModel;
 import net.deckserver.game.enums.GameFormat;
+import net.deckserver.game.enums.RegionType;
 import net.deckserver.services.*;
 import net.deckserver.storage.json.deck.Deck;
 import net.deckserver.storage.json.deck.ExtendedDeck;
+import net.deckserver.storage.json.game.CardData;
 import net.deckserver.storage.json.game.ChatData;
+import net.deckserver.storage.json.game.RegionData;
 import net.deckserver.storage.json.system.DeckInfo;
 import net.deckserver.storage.json.system.GameHistory;
 import net.deckserver.storage.json.system.PlayerResult;
@@ -409,6 +413,14 @@ public class DeckserverRemote {
             }
         }
         return writer.toString();
+    }
+
+    public Map<String, Object> updateRegion(String gameName, String player, String region, int oldPos, int newPos) {
+        JolGame game = GameService.getGameByName(gameName);
+        RegionData playerRegion = game.data().getPlayerRegion(player, RegionType.valueOf(region));
+        LinkedList<CardData> cards = (LinkedList<CardData>) playerRegion.getCards();
+        Collections.swap(cards, oldPos, newPos);
+        return UpdateFactory.getUpdate();
     }
 
     private GameView getView(String name) {
