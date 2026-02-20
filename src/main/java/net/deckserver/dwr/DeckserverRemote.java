@@ -415,11 +415,43 @@ public class DeckserverRemote {
         return writer.toString();
     }
 
-    public Map<String, Object> updateRegion(String gameName, String player, String region, int oldPos, int newPos) {
+    public Map<String, Object> swapCardsInRegion(String gameName, String player, String region, int oldPos, int newPos) {
+        //get Game & Region & Cards
         JolGame game = GameService.getGameByName(gameName);
         RegionData playerRegion = game.data().getPlayerRegion(player, RegionType.valueOf(region));
         LinkedList<CardData> cards = (LinkedList<CardData>) playerRegion.getCards();
-        Collections.swap(cards, oldPos, newPos);
+        //swap pos in collection
+        Collections.swap(cards, oldPos-1, newPos);
+        //reload State
+        doReload(gameName);
+        return UpdateFactory.getUpdate();
+    }
+
+    public Map<String, Object> detachRegionCard(String gameName, String player, String region, String oldPos, int newPos) {
+        //get Game & Region & Cards
+        JolGame game = GameService.getGameByName(gameName);
+        RegionData playerRegion = game.data().getPlayerRegion(player, RegionType.valueOf(region));
+        LinkedList<CardData> cards = (LinkedList<CardData>) playerRegion.getCards();
+        //get Card
+        CardData cardData = getCard(cards, oldPos);
+        //detach Card
+        playerRegion.addCard(cardData, newPos);
+        //reload State
+        doReload(gameName);
+        return UpdateFactory.getUpdate();
+    }
+
+    public Map<String, Object> attachRegionCard(String gameName, String player, String region, String oldPos, String newPos) {
+        //get Game & Region & Cards
+        JolGame game = GameService.getGameByName(gameName);
+        RegionData playerRegion = game.data().getPlayerRegion(player, RegionType.valueOf(region));
+        LinkedList<CardData> cards = (LinkedList<CardData>) playerRegion.getCards();
+        //get card
+        CardData cardData = getCard(cards, oldPos);
+        //attach Card
+        getCard(cards, newPos).add(cardData, true);
+        //reload State
+        doReload(gameName);
         return UpdateFactory.getUpdate();
     }
 
@@ -432,4 +464,22 @@ public class DeckserverRemote {
         return JolAdmin.getGameModel(name);
     }
 
+    private void doReload(String name) {
+        //reload State
+        getModel(name).doReload(true,false,false);
+    }
+
+    private CardData getCard(LinkedList<CardData> cards, String pos) {
+        LinkedList<CardData> targetCards = cards;
+        if(pos.contains(".")){
+            String[] split = pos.split("\\.");
+            int lastCard = Integer.valueOf(split[split.length-1]);
+            for(int i = 0; i < split.length-1; i++) {
+                targetCards = targetCards.get(Integer.valueOf(split[i])-1).getCards();
+            }
+            return targetCards.get(lastCard-1);
+        } else {
+            return cards.get(Integer.valueOf(pos)-1);
+        }
+    }
 }
