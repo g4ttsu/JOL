@@ -415,6 +415,15 @@ public class DeckserverRemote {
         return writer.toString();
     }
 
+    /**
+     * Swap two cards in a given Region
+     * @param gameName - Name where cards should be swapped
+     * @param player - Player whom card shall be swapped
+     * @param region - Region where the cards shall be swapped
+     * @param oldPos - Old Position of the Card
+     * @param newPos - New Positon of the Card
+     * @return Map with View to Update
+     */
     public Map<String, Object> swapCardsInRegion(String gameName, String player, String region, int oldPos, int newPos) {
         //get Game & Region & Cards
         JolGame game = GameService.getGameByName(gameName);
@@ -423,10 +432,19 @@ public class DeckserverRemote {
         //swap pos in collection
         Collections.swap(cards, oldPos-1, newPos);
         //reload State
-        doReload(gameName);
-        return UpdateFactory.getUpdate();
+        return doReload(gameName);
     }
 
+    /**
+     * Detach a Card from another card to a Region
+     *
+     * @param gameName - Name where cards should be detached
+     * @param player - Player whom card shall be detached
+     * @param region - Region where the cards shall be detached
+     * @param oldPos - Old Position of the Card
+     * @param newPos - New Positon of the Card
+     * @return Map with View to Update
+     */
     public Map<String, Object> detachRegionCard(String gameName, String player, String region, String oldPos, int newPos) {
         //get Game & Region & Cards
         JolGame game = GameService.getGameByName(gameName);
@@ -437,10 +455,18 @@ public class DeckserverRemote {
         //detach Card
         playerRegion.addCard(cardData, newPos);
         //reload State
-        doReload(gameName);
-        return UpdateFactory.getUpdate();
+        return doReload(gameName);
     }
 
+    /**
+     * Attach Card to another Card in a given Region
+     * @param gameName - Name where cards should be attached
+     * @param player - Player whom card shall be attached
+     * @param region - Region where the cards shall be attached
+     * @param oldPos - Old Position of the Card
+     * @param newPos - New Positon of the Card
+     * @return Map with View to Update
+     */
     public Map<String, Object> attachRegionCard(String gameName, String player, String region, String oldPos, String newPos) {
         //get Game & Region & Cards
         JolGame game = GameService.getGameByName(gameName);
@@ -451,8 +477,7 @@ public class DeckserverRemote {
         //attach Card
         getCard(cards, newPos).add(cardData, true);
         //reload State
-        doReload(gameName);
-        return UpdateFactory.getUpdate();
+        return doReload(gameName);
     }
 
     private GameView getView(String name) {
@@ -464,9 +489,10 @@ public class DeckserverRemote {
         return JolAdmin.getGameModel(name);
     }
 
-    private void doReload(String name) {
+    public Map<String, Object> doReload(String name) {
         //reload State
         getModel(name).doReload(true,false,false);
+        return UpdateFactory.getUpdate();
     }
 
     private CardData getCard(LinkedList<CardData> cards, String pos) {
