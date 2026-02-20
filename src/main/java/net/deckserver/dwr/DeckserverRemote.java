@@ -429,8 +429,10 @@ public class DeckserverRemote {
         JolGame game = GameService.getGameByName(gameName);
         RegionData playerRegion = game.data().getPlayerRegion(player, RegionType.valueOf(region));
         LinkedList<CardData> cards = (LinkedList<CardData>) playerRegion.getCards();
+        CardData cardData = getCard(cards, String.valueOf(oldPos));
         //swap pos in collection
         Collections.swap(cards, oldPos-1, newPos);
+        sendChatMessage(game.id(), player, cardData.getName(), String.valueOf(oldPos), String.valueOf(newPos+1), region);
         //reload State
         return doReload(gameName);
     }
@@ -454,6 +456,7 @@ public class DeckserverRemote {
         CardData cardData = getCard(cards, oldPos);
         //detach Card
         playerRegion.addCard(cardData, newPos);
+        sendChatMessage(game.id(), player, cardData.getName(), oldPos, String.valueOf(newPos+1), region);
         //reload State
         return doReload(gameName);
     }
@@ -476,6 +479,7 @@ public class DeckserverRemote {
         CardData cardData = getCard(cards, oldPos);
         //attach Card
         getCard(cards, newPos).add(cardData, true);
+        sendChatMessage(game.id(), player, cardData.getName(), oldPos, newPos, region);
         //reload State
         return doReload(gameName);
     }
@@ -507,5 +511,9 @@ public class DeckserverRemote {
         } else {
             return cards.get(Integer.valueOf(pos)-1);
         }
+    }
+
+    private void sendChatMessage(String id, String playerName, String cardName, String oldPos, String newPos, String region) {
+        ChatService.sendMessage(id, playerName, playerName + " moves "+cardName+" from "+oldPos+" to "+newPos+" of their "+region+" region.");
     }
 }
