@@ -4,6 +4,9 @@
         <button class="border-0 shadow rounded-pill bg-light player-only" onclick="toggleNotes();"><i
                 class="bi bi-info-lg me-2"></i>Deck
         </button>
+        <button class="border-0 shadow rounded-pill bg-light" onclick="toggleQuickCommand();"><i
+                class="bi bi-command"></i>Quick Commands
+        </button>
     </div>
     <div class="card-body p-0">
         <label for="globalNotes" class="d-none"></label>
