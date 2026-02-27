@@ -358,6 +358,10 @@ a.card-name {
     grid-area: info;
 }
 
+#quickCommandNotes {
+    grid-area: info;
+}
+
 .clan {
     font-family: clans, sans-serif;
     font-size: 1.5rem;

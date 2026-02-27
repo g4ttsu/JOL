@@ -8,6 +8,7 @@
         <jsp:include page="game-chat.jsp"/>
         <jsp:include page="history.jsp"/>
         <jsp:include page="notes.jsp"/>
+        <jsp:include page="quick-commands-notes.jsp"/>
         <jsp:include page="game-deck.jsp"/>
     </div>
     <div class="row gx-2">

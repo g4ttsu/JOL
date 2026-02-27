@@ -1173,6 +1173,11 @@ function toggleNotes() {
     }
 }
 
+function toggleQuickCommand() {
+    $("#notesCard").toggleClass("d-none");
+    $("#quickCommandNotes").toggleClass("d-none");
+}
+
 function loadGame(data) {
     // //Reset on game change
     const gameTitle = $("#gameTitle");
