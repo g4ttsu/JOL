@@ -9,6 +9,8 @@ const CLANS = ["Abomination", "Ahrimane", "Akunanse", "Baali", "Banu Haqim", "Bl
 const PATHS = ['Death and the Soul', 'Power and the Inner Voice', 'Cathari', 'Caine', 'None'];
 const SECTS = ["Camarilla", "Sabbat", "Independent", "Laibon", "Anarch", "None"];
 
+let autoDrawPref = true;
+
 function cardTypeCSSClass(cardType) {
     return cardType.toLowerCase().replace(' ', '_').replace('/', ' ');
 }
@@ -335,6 +337,10 @@ function playCardCommand(disciplines, target) {
     let doNotReplace = modal.data('do-not-replace');
     let region = modal.data('region');
     let getTargetFromModal = target === 'MINION_YOU_CONTROL' || target === 'SELF' || target === 'SOMETHING';
+    DS.getAutoDrawPref(player, {callback: function (pref) { autoDrawPref = pref;}, errorHandler: errorhandler});
+    if(!doNotReplace){
+        doNotReplace = autoDrawPref;
+    }
     return 'play ' + region + ' ' + handIndex
         + (disciplines ? ' @ ' + disciplines.join(',') : '')
         + (target === 'READY_REGION' ? ' ready' : '')

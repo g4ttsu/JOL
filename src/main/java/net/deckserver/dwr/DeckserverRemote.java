@@ -153,6 +153,7 @@ public class DeckserverRemote {
         JolAdmin.setImageTooltipPreference(playerName, imageTooltips);
         return UpdateFactory.getUpdate();
     }
+
     public Map<String, Object> setAutoDraw(boolean autoDraw) {
         String playerName = getPlayer(request);
         JolAdmin.setAutoDraw(playerName, autoDraw);
@@ -163,6 +164,10 @@ public class DeckserverRemote {
         String playerName = getPlayer(request);
         JolAdmin.setEdgeColor(playerName, color);
         return UpdateFactory.getUpdate();
+    }
+
+    public boolean getAutoDrawPref(String playerName) {
+        return PlayerService.get(playerName).isAutoDraw();
     }
 
     public Map<String, Object> navigate(String target) {

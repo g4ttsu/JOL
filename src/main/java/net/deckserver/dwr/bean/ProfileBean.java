@@ -15,6 +15,7 @@ public class ProfileBean {
     private final String country;
     private final String edgeColor;
     private final boolean imageTooltipPreference;
+    private final boolean autoDraw;
 
     public ProfileBean(PlayerModel model) {
         String player = model.getPlayerName();
@@ -24,6 +25,7 @@ public class ProfileBean {
         this.veknID = playerInfo.getVeknId();
         this.imageTooltipPreference = JolAdmin.getImageTooltipPreference(player);
         this.edgeColor = JolAdmin.getEdgeColor(player);
+        this.autoDraw = JolAdmin.getAutoDraw(player);
         this.country = playerInfo.getCountryCode();
     }
 

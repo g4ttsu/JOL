@@ -285,6 +285,12 @@ public class JolAdmin {
         }
         return PlayerService.get(player).isShowImages();
     }
+    public static synchronized boolean getAutoDraw(String player) {
+        if (player == null) {
+            return true;
+        }
+        return PlayerService.get(player).isAutoDraw();
+    }
 
     public static synchronized String getEdgeColor(String player) {
         if (player == null) {

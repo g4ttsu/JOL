@@ -577,6 +577,10 @@ function callbackProfile(data) {
         $("#imageTooltips").prop("checked", true);
     }
 
+    if (data.autoDraw) {
+        $("#autoDraw").prop("checked", true);
+    }
+
     $("#edgecolorpicker").val(data.edgeColor);
 
     if (subscribed) {
