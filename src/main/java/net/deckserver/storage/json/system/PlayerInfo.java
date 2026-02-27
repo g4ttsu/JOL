@@ -19,6 +19,7 @@ public class PlayerInfo {
     private String countryCode;
     private Set<PlayerRole> roles = new HashSet<>();
     private boolean showImages = true;
+    private boolean autoDraw = true;
     private String edgeColor = "#FFFFFF";
 
     public PlayerInfo(String name, String id, String email, String hash) {

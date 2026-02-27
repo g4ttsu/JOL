@@ -270,8 +270,13 @@ public class JolAdmin {
     public static synchronized void setImageTooltipPreference(String player, boolean value) {
         PlayerService.get(player).setShowImages(value);
     }
+
     public static synchronized void setEdgeColor(String player, String value) {
         PlayerService.get(player).setEdgeColor(value);
+    }
+
+    public static synchronized void setAutoDraw(String player, boolean value) {
+        PlayerService.get(player).setAutoDraw(value);
     }
 
     public static synchronized boolean getImageTooltipPreference(String player) {

@@ -16,6 +16,7 @@ let profile = {
     discordID: "",
     updating: false,
     imageTooltipPreference: true,
+    autoDraw: true,
     edgeColor: "#FFFFFF"
 };
 let subscribed =  localStorage.getItem("notifications-subscribed") === "true";
@@ -541,6 +542,11 @@ function registerForTournament(deckRow, deck) {
 function setImageTooltip() {
     profile.imageTooltipPreference = $("#imageTooltips").is(':checked');
     DS.setUserPreferences(profile.imageTooltipPreference, {callback: processData, errorHandler: errorhandler});
+}
+
+function setAutoDraw() {
+    profile.autoDraw = $("#autoDraw").is(':checked');
+    DS.setAutoDraw(profile.autoDraw, {callback: processData, errorHandler: errorhandler});
 }
 
 function setEdgeColor() {
