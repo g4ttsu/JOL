@@ -703,6 +703,17 @@ function movePredator() {
     return false;
 }
 
+function movePlayer() {
+    let targetPlayer = $("#player-select option:selected").val();
+    let modal = $('#cardModal');
+    let region = $("#cardModal").data('region');
+    var player = modal.data('controller').split(' ', 2)[0]; //names with spaces do not work
+    let command = `move ${player} ${region} ${modal.data('coordinates')} ${targetPlayer}`;
+    sendCommand(command);
+    modal.modal('hide');
+    return false;
+}
+
 function movePrey() {
     let modal = $('#cardModal');
     let region = $("#cardModal").data('region');
