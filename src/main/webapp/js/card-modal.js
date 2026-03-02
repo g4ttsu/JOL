@@ -540,6 +540,15 @@ function showCardModal(event) {
             }
         });
     }
+    //select & empty options
+    let playerSelect = $("#player-select");
+    playerSelect.empty();
+    //fill options with players
+    $("[data-player]").each(function () {
+        playerSelect.append($("<option/>")
+            .val($(this).attr("data-player"))
+            .text($(this).attr("data-player")));
+    })
 }
 
 function setCounters(current, capacity, cardType = null) {

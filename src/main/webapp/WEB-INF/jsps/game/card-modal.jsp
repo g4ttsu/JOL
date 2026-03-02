@@ -1,11 +1,3 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@page import="net.deckserver.dwr.model.JolGame" %>
-<%@page import="net.deckserver.services.GameService" %>
-<%@page import="java.util.List" %>
-<%
-    JolGame game = (JolGame) request.getAttribute("game");
-    List<String> players = GameService.getGame(game.getName()).getPlayers();
-%>
 <div class="modal" id="cardModal" tabindex="-1" role="dialog" aria-labelledby="cardModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content loading" style="height:30vh;text-align:center">
@@ -188,21 +180,24 @@
                             onclick="movePredator();">
                         <span><i class="bi bi-arrow-left-circle"></i> Move to Predator</span>
                     </button>
-                    <button type="button" class="btn btn-outline-dark m-1" title="Move to "
-                            data-region="ready"
-                            onclick="movePlayer();">
-                        <span><i class="bi bi-bullseye"></i> Move to</span>
-                        <select id="player-select" class="form-select form-select-sm ms-2">
-                            <c:forEach items="<%= players %>" var="player">
-                                <option value="${player.name}">${player.name}</option>
-                            </c:forEach>
-                        </select>
-                    </button>
                     <button type="button" class="btn btn-outline-dark m-1" title="Move to Prey"
                             data-region="ready"
                             onclick="movePrey();">
                         <span><i class="bi bi-arrow-right-circle"></i> Move to Prey</span>
                     </button>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div>
+                        <button type="button" class="btn btn-outline-dark m-1" title="Move to"
+                                data-region="ready"
+                                onclick="movePlayer();">
+                            <span><i class="bi bi-bullseye"></i> Move to</span>
+                        </button>
+                    </div>
+                    <div>
+                        <select id="player-select" class="form-select form-select-sm ms-2">
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
