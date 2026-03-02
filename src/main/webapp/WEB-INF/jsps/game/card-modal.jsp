@@ -191,7 +191,7 @@
                         <button type="button" class="btn btn-outline-dark m-1" title="Move to"
                                 data-region="ready"
                                 onclick="movePlayer();">
-                            <span><i class="bi bi-bullseye"></i> Move to</span>
+                            <span><i class="bi bi-person-circle"></i> Move to</span>
                         </button>
                     </div>
                     <div>
