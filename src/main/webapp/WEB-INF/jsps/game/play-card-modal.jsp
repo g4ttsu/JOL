@@ -39,6 +39,11 @@
                             onclick="discard(false);">
                         <span><i class="bi bi-trash"></i> Discard</span>
                     </button>
+                    <button type="button" class="btn btn-outline-success round-button mx-1"
+                            title="Move Library Bottom"
+                            onclick="moveLibraryFromHand(false);">
+                        <span><i class="bi bi-box-arrow-in-down"></i> Library</span>
+                    </button>
                     <button type="button" class="btn btn-outline-danger round-button mx-1"
                             title="Discard and replace"
                             onclick="discard();">
