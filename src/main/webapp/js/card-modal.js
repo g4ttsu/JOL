@@ -684,12 +684,8 @@ function moveLibrary(top) {
 }
 
 function moveUncontrolled() {
-    let modal = $('#cardModal');
-    let region = $("#cardModal").data('region');
-    let command = `move ${region} ${modal.data('coordinates')} inactive`;
-    sendCommand(command);
-    modal.modal('hide');
-    return false;
+    var controller = $('#cardModal').data('controller').split(' ', 2)[0];
+    return doCardCommand("move", "", controller + " uncontrolled");
 }
 
 function removeFromGame() {

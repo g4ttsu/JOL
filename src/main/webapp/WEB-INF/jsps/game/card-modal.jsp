@@ -136,6 +136,13 @@
                             onclick="torpor();">
                         <span>Send to Torpor</span>
                     </button>
+                    <button type="button" class="btn btn-outline-dark m-1" title="Uncontrolled"
+                            data-region="ready"
+                            data-top-level-only
+                            data-minion-only
+                            onclick="moveUncontrolled();">
+                        <span>Send to Uncontrolled</span>
+                    </button>
                     <button type="button" class="btn btn-outline-dark m-1" title="Burn"
                             data-region="ready torpor inactive"
                             onclick="burn();">
