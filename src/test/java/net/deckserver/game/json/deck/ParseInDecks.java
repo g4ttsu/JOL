@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import net.deckserver.game.enums.DeckFormat;
 import net.deckserver.storage.json.deck.ExtendedDeck;
 import net.deckserver.storage.json.system.DeckInfo;
 import net.deckserver.storage.json.system.GameHistory;
@@ -46,13 +47,13 @@ public class ParseInDecks {
             ExtendedDeck extendedDeck = pastDecks.stream().filter(deckName -> deckName.getDeck().getName().equals(playerResult.getDeckName()))
                     .findFirst().orElse(null);
             if (extendedDeck != null) {
-                deckPlayers.put(playerResult.getPlayerName(), extendedDeck.getDeck().getName(), new DeckInfo(extendedDeck.getDeck().getId(), extendedDeck.getDeck().getName(), null, null));
+                deckPlayers.put(playerResult.getPlayerName(), extendedDeck.getDeck().getName(), new DeckInfo(extendedDeck.getDeck().getId(), extendedDeck.getDeck().getName(), DeckFormat.MODERN, new HashSet<>()));
             }
         }
 
 
         decksJson.putAll(deckPlayers);
-        mapper.writeValue(new File("C:\\Users\\extprenn\\Downloads\\deckstuff\\newDecksNoDup.json"), decksJson);
+        mapper.writeValue(new File("C:\\Users\\extprenn\\Downloads\\deckstuff\\newDecks.json"), decksJson);
     }
 
     public List<ExtendedDeck> readInDecks() {
