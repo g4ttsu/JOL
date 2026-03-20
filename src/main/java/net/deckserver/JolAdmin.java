@@ -138,6 +138,7 @@ public class JolAdmin {
             deckName = deckName.trim();
             ExtendedDeck deck = DeckParser.parseDeck(contents);
             deck.getDeck().setName(deckName);
+            deck.getDeck().setAuthor(playerName);
             PlayerModel playerModel = getPlayerModel(playerName);
             playerModel.setDeck(deck);
             playerModel.setContents(contents);
@@ -470,26 +471,6 @@ public class JolAdmin {
         }
     }
 
-    public static synchronized void setJudge(String playerName, boolean value) {
-        PlayerInfo info = PlayerService.get(playerName);
-        setRole(info, PlayerRole.JUDGE, value);
-    }
-
-    public static synchronized void setAdmin(String playerName, boolean value) {
-        PlayerInfo info = PlayerService.get(playerName);
-        setRole(info, PlayerRole.ADMIN, value);
-    }
-
-    public static synchronized void setPlaytester(String playerName, boolean value) {
-        PlayerInfo info = PlayerService.get(playerName);
-        setRole(info, PlayerRole.PLAYTESTER, value);
-    }
-
-    public static synchronized void setSuperUser(String playerName, boolean value) {
-        PlayerInfo info = PlayerService.get(playerName);
-        setRole(info, PlayerRole.SUPER_USER, value);
-    }
-
     public static OffsetDateTime getCreatedTime(String gameName) {
         return Optional.ofNullable(GameService.get(gameName))
                 .map(GameInfo::getCreated)
@@ -580,7 +561,7 @@ public class JolAdmin {
         }
     }
 
-    private static void setRole(PlayerInfo info, PlayerRole role, boolean enabled) {
+    public static void setRole(PlayerInfo info, PlayerRole role, boolean enabled) {
         if (enabled) {
             info.getRoles().add(role);
         } else {

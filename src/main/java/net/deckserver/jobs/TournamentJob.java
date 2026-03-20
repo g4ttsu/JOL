@@ -87,12 +87,13 @@ public class TournamentJob implements Runnable {
                     NotificationService.pingPlayer(playerName, null, gameName);
                 }
                 // Set order and start
-                jolGame.startGame(seeding);
+                jolGame.startGame(seeding, true);
                 // Save game
                 GameService.saveGame(jolGame);
                 // Update status
                 GameService.get(gameName).setStatus(GameStatus.ACTIVE);
                 GlobalChatService.chat("SYSTEM", String.format("Game %s started", gameName));
+                ChatService.sendSystemMessage(gameId, "Finals Seating has been activated.");
             }
         }
 
@@ -107,9 +108,8 @@ public class TournamentJob implements Runnable {
                     for (TournamentPlayer player : players) {
                         String playerName = player.getName();
                         var registration = TournamentService.getRegistrations(tournamentName, playerName).orElseThrow();
-                        Path gameDeckPath = Paths.get(System.getenv("JOL_DATA"), "games", gameId, registration.getDeck() + ".json");
-                        Path tournamentDeckPath = Paths.get(System.getenv("JOL_DATA"), "tournaments", tournament.getId(), registration.getDeck() + ".json");
-                        if (!Files.exists(gameDeckPath)) {
+                        Path gameDeckPath = DataPaths.path("games", gameId, registration.getDeck() + ".json");
+                        Path tournamentDeckPath = DataPaths.path("tournaments", tournament.getId(), registration.getDeck() + ".json");                        if (!Files.exists(gameDeckPath)) {
                             try {
                                 Files.copy(tournamentDeckPath, gameDeckPath, StandardCopyOption.REPLACE_EXISTING);
                                 log.info("Copying missing tournament game file for {} - {} Round {} - Table {}", tournamentName, playerName, round, table);

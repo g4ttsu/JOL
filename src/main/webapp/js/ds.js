@@ -102,31 +102,37 @@ function callbackAdmin(data) {
         let playerRow = $("<tr/>");
         let nameCell = $("<td/>").text(value.name);
         let onlineCell = $("<td/>").text(moment(value.lastOnline).tz("UTC").format("D-MMM-YY HH:mm z"));
-        let removeJudgeButton = value.judge ? createButton({
+        let removeJudgeButton = value.roles.includes("JUDGE") ? createButton({
             html: '<i class="bi bi-x"></i>',
             class: "btn btn-outline-secondary btn-sm",
             confirm: "Are you sure you want to remove this role?"
-        }, DS.setJudge, value.name, false) : "";
+        }, DS.setRole, value.name, "JUDGE", false) : "";
         let judgeCell = $("<td/>").addClass("text-center").append(removeJudgeButton);
-        let removeSuperButton = value.superUser ? createButton({
+        let removeSuperButton = value.roles.includes("SUPER_USER") ? createButton({
             html: '<i class="bi bi-x"></i>',
             class: "btn btn-outline-secondary btn-sm",
             confirm: "Are you sure you want to remove this role?"
-        }, DS.setSuperUser, value.name, false) : "";
+        }, DS.setRole, value.name, "SUPER_USER", false) : "";
         let superCell = $("<td/>").addClass("text-center").append(removeSuperButton);
-        let removePlaytestButton = value.playtester ? createButton({
+        let removePlaytestButton = value.roles.includes("SUPER_USER") ? createButton({
             html: '<i class="bi bi-x"></i>',
             class: "btn btn-outline-secondary btn-sm",
             confirm: "Are you sure you want to remove this role?"
-        }, DS.setPlaytest, value.name, false) : "";
+        }, DS.setRole, value.name, "PLAYTESTER", false) : "";
         let playtestCell = $("<td/>").addClass("text-center").append(removePlaytestButton);
-        let removeAdminButton = value.admin ? createButton({
+        let removeAdminButton = value.roles.includes("PLAYTESTER") ? createButton({
             html: '<i class="bi bi-x"></i>',
             class: "btn btn-outline-secondary btn-sm",
             confirm: "Are you sure you want to remove this role?"
-        }, DS.setAdmin, value.name, false) : "";
+        }, DS.setRole, value.name, "ADMIN", false) : "";
         let adminCell = $("<td/>").addClass("text-center").append(removeAdminButton);
-        playerRow.append(nameCell, onlineCell, judgeCell, superCell, playtestCell, adminCell);
+        let removeTournamentButton = value.roles.includes("TOURNAMENT_ADMIN") ? createButton({
+            html: '<i class="bi bi-x"></i>',
+            class: "btn btn-outline-secondary btn-sm",
+            confirm: "Are you sure you want to remove this role?"
+        }, DS.setRole, value.name, "TOURNAMENT_ADMIN", false) : "";
+        let tournamentCell = $("<td/>").addClass("text-center").append(removeTournamentButton);
+        playerRow.append(nameCell, onlineCell, judgeCell, superCell, playtestCell, adminCell, tournamentCell);
         userRoles.append(playerRow);
     })
     let adminReplacementList = $("#adminReplacementList");
@@ -256,8 +262,7 @@ function adminEndTurn() {
 function addRole() {
     let player = $("#adminPlayerList").val();
     let role = $("#adminRoleList").val();
-    let functionName = "DS.set" + role;
-    eval(functionName + "('" + player + "', true, {callback:processData});");
+    DS.setRole(player, role, true, {callback:processData});
 }
 
 function callbackLobby(data) {
@@ -824,8 +829,10 @@ function renderGameChat(data) {
         const dateAndTime = parts[0].split(' ', 2);
         const date = dateAndTime[0];
         const time = dateAndTime[1];
-        const player = parts[1];
-        const message = parts[2];
+        const playerSource = parts[1];
+        const message = parts[2]
+            .replaceAll("&#64;"+player, "<span style='background-color: #D4D7F9; color:black'>@"+player+"</span>")
+            .replaceAll("&#64;All", "<span style='background-color: #D4D7F9; color:black'>@All</span>");
         let timestamp;
         if (date === gameChatLastDay)
             timestamp = time;
@@ -834,7 +841,7 @@ function renderGameChat(data) {
             timestamp = date + ' ' + time;
         }
         let timeSpan = $("<span/>").text(timestamp).addClass('chat-timestamp');
-        let playerLabel = player === "null" ? '' : $("<b/>").text(player);
+        let playerLabel = playerSource === "null" ? '' : $("<b/>").text(playerSource);
         let lineElement = $('<p/>').addClass('chat').append(timeSpan, ' ', playerLabel, ' ', message);
         container.append(lineElement);
     });
@@ -879,7 +886,11 @@ function renderGlobalChat(data) {
         let chatLine = $("<p/>").addClass("chat");
         let timeOutput = $("<span/>").text(timestamp).attr("title", userTimestamp).addClass('chat-timestamp');
         let playerLabel = globalChatLastPlayer === chat.player && globalChatLastDay === day ? "" : "<b>" + chat.player + "</b> ";
-        let message = $("<span/>").html(" " + playerLabel + chat.message);
+        //replace player name with colored player name
+        let msg = chat.message
+            .replaceAll("&#64;"+player, "<span style='background-color: #D4D7F9; color:black'>@"+player+"</span>")
+            .replaceAll("&#64;All", "<span style='background-color: #D4D7F9; color:black'>@All</span>");
+        let message = $("<span/>").html(" " + playerLabel + msg);
 
         if (chat.player !== player) {
             onlySelfChat = false;
@@ -1426,10 +1437,12 @@ function loadHistory(data) {
     historyDiv.empty();
     $.each(data, function (index, content) {
         const dateAndTime = content.timestamp;
-        const player = content.source;
-        const message = content.message;
+        const playerSource = content.source;
+        const message = content.message
+            .replaceAll("&#64;"+player, "<span style='background-color: #D4D7F9; color:black'>@"+player+"</span>")
+            .replaceAll("&#64;All", "<span style='background-color: #D4D7F9; color:black'>@All</span>");
         let timeSpan = $("<span/>").text(dateAndTime).addClass('chat-timestamp');
-        let playerLabel = player === "null" ? '' : $("<b/>").text(player);
+        let playerLabel = playerSource === "null" ? '' : $("<b/>").text(playerSource);
         let lineElement = $('<p/>').addClass('chat').append(timeSpan, ' ', playerLabel, ' ', message);
         historyDiv.append(lineElement);
     });
