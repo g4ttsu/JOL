@@ -9,7 +9,7 @@
         </div>
         <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" role="switch" id="autoDraw" switch onclick="setAutoDraw()">
-            <label class="form-check-label" for="autoDraw">Enable Auto Draw</label>
+            <label class="form-check-label" for="autoDraw">Auto Draw</label>
         </div>
         <div class="d-flex justify-content-start align-items-center">
             <input type="color" id="edgecolorpicker" onchange="setEdgeColor()" style="width:8%;">

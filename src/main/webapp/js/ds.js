@@ -554,6 +554,13 @@ function setAutoDraw() {
     DS.setAutoDraw(profile.autoDraw, {callback: processData, errorHandler: errorhandler});
 }
 
+function setAutoDrawCookie() {
+    let isChecked = $("#autoDrawCookie").is(':checked');
+    let drawButton = $("#quickDrawLib");
+    setCookie('autoDrawPref-'+ game+'-'+player, isChecked, 90);
+    drawButton.prop('hidden', isChecked)
+}
+
 function setEdgeColor() {
     profile.edgeColor = $("#edgecolorpicker").val();
     DS.setEdgeColor(profile.edgeColor, {callback: processData, errorHandler: errorhandler});
@@ -1337,6 +1344,19 @@ function loadGame(data) {
         addCardTooltips("#hand");
     }
 
+    // render autoDraw
+    let autoDrawCookie = $("#autoDrawCookie");
+    let drawButton = $("#quickDrawLib");
+    let autoDrawPrefGamePlayer = getCookie('autoDrawPref-'+ game+'-'+player);
+    if(autoDrawPrefGamePlayer != '') {
+        autoDrawCookie.prop("checked", autoDrawPrefGamePlayer === 'true' ? true : false);
+        drawButton.prop("hidden", autoDrawPrefGamePlayer === 'true' ? true : false);
+    } else {
+        DS.getAutoDrawPref(player, {callback: function (pref) {
+            autoDrawCookie.prop("checked", pref);
+                drawButton.prop("hidden", pref);
+            }, errorHandler: errorhandler});
+    }
     // Setup polling
     if (refresher) clearTimeout(refresher);
     if (data.refresh > 0 || fetchFullLog) {
@@ -1533,4 +1553,27 @@ function toggleMode() {
     } else {
         wrapper.removeAttr("data-bs-theme");
     }
+}
+
+function setCookie(cname, cvalue, exdays) {
+    const d = new Date();
+    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+    let expires = "expires="+ d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function getCookie(cname) {
+    let name = cname + "=";
+    let decodedCookie = decodeURIComponent(document.cookie);
+    let ca = decodedCookie.split(';');
+    for(let i = 0; i <ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
 }

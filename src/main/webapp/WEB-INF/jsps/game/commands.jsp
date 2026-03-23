@@ -34,6 +34,14 @@
                                 onclick="doEndTurn()">End Turn
                         </button>
                     </div>
+                    <div class="form-check align-items-center form-switch d-flex justify-content-between mt-3">
+                        <div>
+                            <input class="form-check-input player-only" type="checkbox" role="switch" id="autoDrawCookie" switch="" onclick="setAutoDrawCookie()">
+                            <label class="form-check-label player-only" for="autoDraw">Auto Draw</label>
+                        </div>
+                        <div>
+                            <button class="btn btn-success btn-sm player-only" id="quickDrawLib" type="button" onclick="sendCommand('draw')">Draw</button></div>
+                        </div>
                 </div>
             </div>
         </form>

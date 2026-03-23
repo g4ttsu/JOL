@@ -340,9 +340,16 @@ function playCardCommand(disciplines, target) {
     let doNotReplace = modal.data('do-not-replace');
     let region = modal.data('region');
     let getTargetFromModal = target === 'MINION_YOU_CONTROL' || target === 'SELF' || target === 'SOMETHING';
-    DS.getAutoDrawPref(player, {callback: function (pref) { autoDrawPref = pref;}, errorHandler: errorhandler});
+    // check for auto Draw in cookie
+    let autoDrawPrefGamePlayer = getCookie('autoDrawPref-'+ game+'-'+player)
+    if(autoDrawPrefGamePlayer != '') {
+        autoDrawPref = autoDrawPrefGamePlayer ==='true' ? true : false;
+    } else {
+        DS.getAutoDrawPref(player, {callback: function (pref) { autoDrawPref = pref;}, errorHandler: errorhandler});
+    }
+    // in case the current card can be redrawn update doNotReplace with current autoDrawPref
     if(!doNotReplace){
-        doNotReplace = autoDrawPref;
+        doNotReplace = !autoDrawPref; //autoDraw = true has to set doNotReplace = false
     }
     return 'play ' + region + ' ' + handIndex
         + (disciplines ? ' @ ' + disciplines.join(',') : '')
