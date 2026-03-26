@@ -643,7 +643,11 @@ function callbackFilterDecks(decks) {
         });
         const clanTag = $("<div/>");
         $.each(deck.clans, function (index, clan) {
-            clanTag.append($("<span/>").addClass("clan "+clan));
+            clanTag.append($("<span/>").addClass("fs-6 clan "+clan));
+        });
+        const discTag = $("<div/>");
+        $.each(deck.discs, function (index, disc) {
+            discTag.append($("<span/>").addClass("fs-6 icon "+disc));
         });
         const deckComment = $("<div/>").append($("<span/>")
             .addClass("badge bg-light text-black shadow border border-secondary-subtle text-wrap")
@@ -656,7 +660,7 @@ function callbackFilterDecks(decks) {
         });
         let wrapper = $("<div/>").addClass("d-flex justify-content-between align-items-center")
             .append(deckName)
-            .append(clanTag)
+            .append($("<div/>").append(clanTag, discTag))
             .append($("<span/>").addClass("d-flex gap-1 align-items-center").append(deleteButton));
         deckCell.append(wrapper, deckComment);
         deckRow.append(deckCell);

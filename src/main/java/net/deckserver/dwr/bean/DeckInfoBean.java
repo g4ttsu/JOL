@@ -18,6 +18,8 @@ public class DeckInfoBean {
     private final String comments;
     @Getter
     private final Set<String> clans;
+    @Getter
+    private final Set<String> discs;
 
     public DeckInfoBean(String playerName, String deckName) {
         this.name = deckName;
@@ -25,6 +27,7 @@ public class DeckInfoBean {
         this.gameFormats = JolAdmin.getTags(playerName, deckName);
         this.comments = JolAdmin.getDeckComment(playerName, deckName).split("\n")[0];
         this.clans = JolAdmin.getCryptClans(playerName, deckName);
+        this.discs = JolAdmin.getCryptDisc(playerName, deckName);
     }
 
     public String getDeckFormat() {

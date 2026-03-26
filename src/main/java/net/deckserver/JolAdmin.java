@@ -116,20 +116,10 @@ public class JolAdmin {
     }
 
     public static Set<String> getCryptClans(String playerName, String deckName) {
-        Set<String> clans = new HashSet<>();
-        DeckService.getDeckCrypt(playerName, deckName).stream().forEach(id -> {
-            try {
-                CardService.get(String.valueOf(id)).getClans()
-                        .forEach(clan -> {
-                            if(!clans.contains(clan)){
-                                clans.add(clan.replace(" ", "_").toLowerCase());
-                            }
-                        });
-            } catch (NullPointerException e) {
-                logger.error("Error getting clan for card {}", id);
-            }
-        });
-        return clans;
+        return DeckService.getDeckStats(playerName, deckName).getClans();
+    }
+    public static Set<String> getCryptDisc(String playerName, String deckName) {
+        return DeckService.getDeckStats(playerName, deckName).getDiscs();
     }
 
     public static void setDeckComment(String playerName, String gameName, String comments) {

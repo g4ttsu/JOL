@@ -68,6 +68,8 @@ public class DeckParser {
         List<String> errors = cardCounts.stream().filter(FOUND_CARD.negate()).map(CardCount::getComments).map(String::trim).collect(Collectors.toList());
 
         Set<String> groups = new HashSet<>();
+        Set<String> clans = new HashSet<>();
+        Set<String> discs = new HashSet<>();
         boolean hasBannedCards = false;
         for (CardCount cardCount : deck.getCrypt().getCards()) {
             String id = String.valueOf(cardCount.getId());
@@ -77,6 +79,16 @@ public class DeckParser {
             }
             if (card.isBanned()) {
                 hasBannedCards = true;
+            }
+            for (String clan : card.getClans()) {
+                if(!clans.contains(clan)) {
+                    clans.add(clan.toLowerCase().replaceAll(" ", "_"));
+                }
+            }
+            for (String disc : card.getDisciplines()) {
+                if(!discs.contains(disc)) {
+                    discs.add(disc);
+                }
             }
         }
         for (LibraryCard libraryCard : deck.getLibrary().getCards()) {
@@ -88,7 +100,7 @@ public class DeckParser {
                 }
             }
         }
-        DeckStats stats = new DeckStats(cryptCount, libraryCount, groups, hasBannedCards);
+        DeckStats stats = new DeckStats(cryptCount, libraryCount, groups, hasBannedCards, clans, discs);
         logger.debug("Parsed deck with {} errors, {} crypt, and {} library", errors.size(), cryptCount, libraryCount);
         return new ExtendedDeck(deck, stats, errors);
     }
