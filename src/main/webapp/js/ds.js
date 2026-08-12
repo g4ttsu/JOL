@@ -1390,8 +1390,18 @@ function saveTables() {
                 rounds[round][tableNumber] = players;
             }
         });
-        DS.saveTables(tournamentSelected, rounds, {callback: processData, errorHandler: errorhandler});
-        resetTournamentManager();
+
+        DS.saveTables(tournamentSelected, rounds, {
+            callback: function() {
+                let msg = $("#importTablesMsg");
+                msg.text("Tables saved successfully.").removeClass("d-none alert-danger").addClass("alert alert-success");
+                setTimeout(function() { msg.addClass("d-none"); }, 4000);
+                resetTournamentManager();
+            },
+            errorHandler: function(msg) {
+                errorDiv.text("Saving Tables failed: " + msg).removeClass("d-none");
+            }
+        });
     }
 }
 

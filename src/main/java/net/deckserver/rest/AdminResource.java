@@ -75,7 +75,8 @@ public class AdminResource extends BaseResource {
     @Path("player/{name}/vekn")
     public String getVekn(@PathParam("name") String playerName) {
         username(); // auth check
-        return PlayerService.get(playerName).getVeknId();
+        String veknId = PlayerService.get(playerName).getVeknId();
+        return veknId !=null ? veknId.replace("#", "") : veknId;
     }
 
     /**
