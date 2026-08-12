@@ -109,6 +109,24 @@
                         Deck Statistics
                     </button>
                 </li>
+                <li class="nav-item">
+                    <button id="metricsTab"
+                            class="nav-link"
+                            onclick="renderMetrics()"
+                            data-bs-toggle="tab"
+                            data-bs-target="#metricsPane">
+                        Player Activity
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button id="metricsGameTab"
+                            class="nav-link"
+                            onclick="renderMetricsGames()"
+                            data-bs-toggle="tab"
+                            data-bs-target="#metricsGamesPane">
+                        Games Activity
+                    </button>
+                </li>
             </ul>
 
             <div class="tab-content mt-3">
@@ -173,6 +191,72 @@
                                                                               onclick="sortPercentageTable(4, 'statsDeckGames')"></i></th>
                                 <th class="sticky-top bg-white">Average VP <i class="bi bi-filter"
                                                                               onclick="sortTable(5, 'statsDeckGames')"></i></th>
+                            </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+                <!-- Player Metrics -->
+
+                <div class="tab-pane fade"
+                     id="metricsPane">
+
+                    <div class="overflow-auto" style="max-height:100vh;">
+                        <table id="playerMetrics" class="table table-sm mb-0">
+                            <thead>
+                            <tr>
+                                <th class="sticky-top bg-white">Player
+                                    <input type="text" id="playerMetricsFilter"
+                                           oninput="filterName('#playerMetrics tbody tr', 'playerMetricsFilter', 1)">
+                                    <i class="bi bi-filter" onclick="sortTable(0, 'playerMetrics')"></i></th>
+                                <th class="sticky-top bg-white">All
+                                    <i class="bi bi-filter" onclick="sortTable(1, 'playerMetrics')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Chat
+                                    <i class="bi bi-filter" onclick="sortTable(2, 'playerMetrics')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Command
+                                    <i class="bi bi-filter" onclick="sortTable(3, 'playerMetrics')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Both
+                                    <i class="bi bi-filter" onclick="sortTable(4, 'playerMetrics')"></i>
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+                <!-- Games Metrics -->
+
+                <div class="tab-pane fade"
+                     id="metricsGamesPane">
+
+                    <div class="overflow-auto" style="max-height:100vh;">
+                        <table id="gamesMetrics" class="table table-sm mb-0">
+                            <thead>
+                            <tr>
+                                <th class="sticky-top bg-white">Game
+                                    <input type="text" id="gameMetricsFilter"
+                                           oninput="filterName('#gamesMetrics tbody tr', 'gameMetricsFilter', 1)">
+                                    <i class="bi bi-filter" onclick="sortTable(0, 'gamesMetrics')"></i></th>
+                                <th class="sticky-top bg-white">All
+                                    <i class="bi bi-filter" onclick="sortTable(1, 'gamesMetrics')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Chat
+                                    <i class="bi bi-filter" onclick="sortTable(2, 'gamesMetrics')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Command
+                                    <i class="bi bi-filter" onclick="sortTable(3, 'gamesMetrics')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Both
+                                    <i class="bi bi-filter" onclick="sortTable(4, 'gamesMetrics')"></i>
+                                </th>
                             </tr>
                             </thead>
                             <tbody></tbody>

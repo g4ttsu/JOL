@@ -2,6 +2,7 @@ package net.deckserver.rest;
 
 import net.deckserver.JolAdmin;
 import net.deckserver.game.enums.PlayerRole;
+import net.deckserver.services.MetricsService;
 import net.deckserver.services.PlayerService;
 import net.deckserver.services.SiteNotesService;
 import net.deckserver.storage.json.system.PlayerInfo;
@@ -118,6 +119,24 @@ public class AdminResource extends BaseResource {
     @Path("stats/deck")
     public Map<String, List<String>> getStatsPerDeck(StatsRequest body) {
         return getStats(body, this::generateStatsPerDeck);
+    }
+
+    @GET
+    @Path("metrics/player")
+    public Map<String, List<Long>> getMetricsPlayer() {
+        return getMetrics(
+                new MetricsService().load(),
+                MetricsService.PlayerMetricsDto::playerName
+        );
+    }
+
+    @GET
+    @Path("metrics/game")
+    public Map<String, List<Long>> getMetricsGame() {
+        return getMetrics(
+                new MetricsService().load(),
+                MetricsService.PlayerMetricsDto::gameName
+        );
     }
 
     /**
@@ -238,5 +257,30 @@ public class AdminResource extends BaseResource {
                       Map<String, Integer> gw,
                       Map<String, Double> vp,
                       Map<String, Integer> games);
+    }
+
+    private Map<String, List<Long>> getMetrics(
+            List<MetricsService.PlayerMetricsDto> load,
+            Function<MetricsService.PlayerMetricsDto, String> keyExtractor) {
+
+        return load.stream()
+                .collect(Collectors.groupingBy(
+                        keyExtractor,
+                        Collectors.collectingAndThen(
+                                Collectors.toList(),
+                                list -> List.of(
+                                        (long) list.size(),
+                                        list.stream()
+                                                .filter(MetricsService.PlayerMetricsDto::didChat)
+                                                .count(),
+                                        list.stream()
+                                                .filter(MetricsService.PlayerMetricsDto::didCommand)
+                                                .count(),
+                                        list.stream()
+                                                .filter(dto -> dto.didCommand() && dto.didChat())
+                                                .count()
+                                )
+                        )
+                ));
     }
 }

@@ -90,6 +90,8 @@ const DS = {
     exportPastGamesAsCsv:    (opts) => apiGetText('/admin/export/games.csv', opts),
     stats:                   (treshold, fromDate, toDate, isTourney, opts) => apiPost(`/admin/stats`, {treshold, fromDate, toDate, isTourney}, opts),
     statsPerDeck:            (treshold, fromDate, toDate, isTourney, opts) => apiPost(`/admin/stats/deck`, {treshold, fromDate, toDate, isTourney}, opts),
+    metrics:                 (opts) => apiGet(`/admin/metrics/player`, opts),
+    metricsGames:            (opts) => apiGet(`/admin/metrics/game`, opts),
     updateSiteNotes:         (notes, opts) => apiPut('/admin/site-notes', {notes}, opts),
     clearSiteNotes:          (opts) => apiDel('/admin/site-notes', opts),
 
@@ -3032,6 +3034,24 @@ function renderStats() {
     }
 }
 
+function renderMetrics() {
+    DS.metrics({
+            callback: (data) => {
+                createMetrics(data);
+            },
+            errorHandler: errorhandler
+        });
+}
+
+function renderMetricsGames() {
+    DS.metricsGames({
+            callback: (data) => {
+                createMetricsGames(data);
+            },
+            errorHandler: errorhandler
+        });
+}
+
 function createStatsPerDeck(stats) {
     let statsGames = $("#statsDeckGames tbody");
     statsGames.empty();
@@ -3049,7 +3069,8 @@ function createStatsPerDeck(stats) {
             statsGames.append(playerRow);
         }
     })
-}function createStats(stats) {
+}
+function createStats(stats) {
     let statsGames = $("#statsGames tbody");
     statsGames.empty();
     $.each(stats, function (index, playerEntry) {
@@ -3065,6 +3086,37 @@ function createStatsPerDeck(stats) {
             playerRow.append(playerName, games, gw, vp, gwRat, vpRat);
             statsGames.append(playerRow);
         }
+    })
+}
+
+function createMetrics(data) {
+    let metrics = $("#playerMetrics tbody");
+    metrics.empty();
+    $.each(data, function (index, count) {
+        let playerRow = $("<tr/>");
+        playerRow.addClass("border-top")
+        let playerName = $("<td/>").text(index);
+        let activity = $("<td/>").text(count[0]);
+        let chat = $("<td/>").text(count[1]);
+        let command = $("<td/>").text(count[2]);
+        let both = $("<td/>").text(count[3]);
+        playerRow.append(playerName, activity, chat, command, both);
+        metrics.append(playerRow);
+    })
+}
+function createMetricsGames(data) {
+    let metrics = $("#gamesMetrics tbody");
+    metrics.empty();
+    $.each(data, function (index, count) {
+        let gameRow = $("<tr/>");
+        gameRow.addClass("border-top")
+        let gameName = $("<td/>").text(index);
+        let activity = $("<td/>").text(count[0]);
+        let chat = $("<td/>").text(count[1]);
+        let command = $("<td/>").text(count[2]);
+        let both = $("<td/>").text(count[3]);
+        gameRow.append(gameName, activity, chat, command, both);
+        metrics.append(gameRow);
     })
 }
 
