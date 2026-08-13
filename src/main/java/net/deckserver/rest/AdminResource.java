@@ -120,10 +120,11 @@ public class AdminResource extends BaseResource {
 
     @GET
     @Path("metrics/player")
-    public Map<String, List<Long>> getMetricsPlayer(@QueryParam("fromDate") String fromDate, @QueryParam("toDate") String toDate) {
+    public Map<String, List<Long>> getMetricsPlayer(@QueryParam("fromDate") String fromDate, @QueryParam("toDate") String toDate, @QueryParam("tourOnly") boolean tourOnly) {
         return getMetrics(
                 fromDate,
                 toDate,
+                tourOnly,
                 MetricsService.load(),
                 MetricsService.PlayerMetricDto::playerName
         );
@@ -131,10 +132,11 @@ public class AdminResource extends BaseResource {
 
     @GET
     @Path("metrics/game")
-    public Map<String, List<Long>> getMetricsGame(@QueryParam("fromDate") String fromDate, @QueryParam("toDate") String toDate) {
+    public Map<String, List<Long>> getMetricsGame(@QueryParam("fromDate") String fromDate, @QueryParam("toDate") String toDate, @QueryParam("tourOnly") boolean tourOnly) {
         return getMetrics(
                 fromDate,
                 toDate,
+                tourOnly,
                 MetricsService.load(),
                 MetricsService.PlayerMetricDto::gameName
         );
@@ -142,10 +144,11 @@ public class AdminResource extends BaseResource {
 
     @GET
     @Path("commands/player")
-    public Map<String, List<Long>> getCommandsPlayer(@QueryParam("fromDate") String fromDate, @QueryParam("toDate") String toDate) {
+    public Map<String, List<Long>> getCommandsPlayer(@QueryParam("fromDate") String fromDate, @QueryParam("toDate") String toDate, @QueryParam("tourOnly") boolean tourOnly) {
         return getCommands(
                 fromDate,
                 toDate,
+                tourOnly,
                 MetricsService.loadCommands(),
                 MetricsService.CommandMetricDto::playerName
         );
@@ -153,10 +156,11 @@ public class AdminResource extends BaseResource {
 
     @GET
     @Path("commands/game")
-    public Map<String, List<Long>> getCommandsGame(@QueryParam("fromDate") String fromDate, @QueryParam("toDate") String toDate) {
+    public Map<String, List<Long>> getCommandsGame(@QueryParam("fromDate") String fromDate, @QueryParam("toDate") String toDate, @QueryParam("tourOnly") boolean tourOnly) {
         return getCommands(
                 fromDate,
                 toDate,
+                tourOnly,
                 MetricsService.loadCommands(),
                 MetricsService.CommandMetricDto::game
         );
@@ -197,7 +201,7 @@ public class AdminResource extends BaseResource {
     public record SiteNotesRequest(String notes) {
     }
 
-    public record StatsRequest(int treshold, String fromDate, String toDate, boolean isTourney) {
+    public record StatsRequest(int treshold, String fromDate, String toDate, boolean tourOnly) {
     }
 
     private Map<String, List<String>> getStats(StatsRequest body, StatsGenerator generator) {
@@ -206,7 +210,7 @@ public class AdminResource extends BaseResource {
         Map<String, Double> vp = new HashMap<>();
         Map<String, Integer> games = new HashMap<>();
 
-        if (body.isTourney()) {
+        if (body.tourOnly()) {
             for (GameHistory game : history.values()) {
                 if (game.getName().contains("Final Table") ||
                         Pattern.compile("Round\\s+\\d+\\s*-\\s*Table\\s+\\d+").matcher(game.getName()).find()) {
@@ -283,7 +287,7 @@ public class AdminResource extends BaseResource {
     }
 
     private Map<String, List<Long>> getMetrics(
-            String fromDate, String toDate,
+            String fromDate, String toDate, boolean tourOnly,
             List<MetricsService.PlayerMetricDto> load,
             Function<MetricsService.PlayerMetricDto, String> keyExtractor) {
 
@@ -295,6 +299,13 @@ public class AdminResource extends BaseResource {
                             }
                             return true;
                         })
+                .filter(data -> {
+                    if(tourOnly) {
+                        return data.gameName().contains("Final Table") ||
+                                Pattern.compile("Round\\s+\\d+\\s*-\\s*Table\\s+\\d+").matcher(data.gameName()).find();
+                    }
+                    return true;
+                })
                 .collect(Collectors.groupingBy(
                         keyExtractor,
                         Collectors.collectingAndThen(
@@ -319,7 +330,7 @@ public class AdminResource extends BaseResource {
     }
 
     private Map<String, List<Long>> getCommands(
-            String fromDate, String toDate,
+            String fromDate, String toDate, boolean tourOnly,
             List<MetricsService.CommandMetricDto> load,
             Function<MetricsService.CommandMetricDto, String> keyExtractor) {
         return MetricsService.loadCommands().stream()
@@ -327,6 +338,13 @@ public class AdminResource extends BaseResource {
                     if(!fromDate.equals("") && !toDate.equals("")) {
                         return data.timestamp().toLocalDate().isAfter(LocalDate.parse(fromDate)) &&
                                 data.timestamp().toLocalDate().isBefore(LocalDate.parse(toDate));
+                    }
+                    return true;
+                })
+                .filter(data -> {
+                    if(tourOnly) {
+                        return data.game().contains("Final Table") ||
+                                Pattern.compile("Round\\s+\\d+\\s*-\\s*Table\\s+\\d+").matcher(data.game()).find();
                     }
                     return true;
                 })

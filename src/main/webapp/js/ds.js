@@ -88,12 +88,12 @@ const DS = {
     setMessage:              (message, opts) => apiPost('/admin/message', {message}, opts),
     getVekn:                 (playerName, opts) => apiGet(`/admin/player/${_enc(playerName)}/vekn`, opts),
     exportPastGamesAsCsv:    (opts) => apiGetText('/admin/export/games.csv', opts),
-    stats:                   (treshold, fromDate, toDate, isTourney, opts) => apiPost(`/admin/stats`, {treshold, fromDate, toDate, isTourney}, opts),
-    statsPerDeck:            (treshold, fromDate, toDate, isTourney, opts) => apiPost(`/admin/stats/deck`, {treshold, fromDate, toDate, isTourney}, opts),
-    metricsPlayer:           (fromDate, toDate, opts) => apiGet(`/admin/metrics/player?fromDate=${_enc(fromDate)}&toDate=${_enc(toDate)}`, opts),
-    metricsGames:            (fromDate, toDate, opts) => apiGet(`/admin/metrics/game?fromDate=${_enc(fromDate)}&toDate=${_enc(toDate)}`, opts),
-    commandsPlayer:          (fromDate, toDate, opts) => apiGet(`/admin/commands/player?fromDate=${_enc(fromDate)}&toDate=${_enc(toDate)}`, opts),
-    commandsGame:            (fromDate, toDate, opts) => apiGet(`/admin/commands/game?fromDate=${_enc(fromDate)}&toDate=${_enc(toDate)}`, opts),
+    stats:                   (treshold, fromDate, toDate, tourOnly, opts) => apiPost(`/admin/stats`, {treshold, fromDate, toDate, tourOnly}, opts),
+    statsPerDeck:            (treshold, fromDate, toDate, tourOnly, opts) => apiPost(`/admin/stats/deck`, {treshold, fromDate, toDate, tourOnly}, opts),
+    metricsPlayer:           (fromDate, toDate, tourOnly, opts) => apiGet(`/admin/metrics/player?fromDate=${_enc(fromDate)}&toDate=${_enc(toDate)}&tourOnly=${_enc(tourOnly)}`, opts),
+    metricsGames:            (fromDate, toDate, tourOnly, opts) => apiGet(`/admin/metrics/game?fromDate=${_enc(fromDate)}&toDate=${_enc(toDate)}&tourOnly=${_enc(tourOnly)}`, opts),
+    commandsPlayer:          (fromDate, toDate, tourOnly, opts) => apiGet(`/admin/commands/player?fromDate=${_enc(fromDate)}&toDate=${_enc(toDate)}&tourOnly=${_enc(tourOnly)}`, opts),
+    commandsGame:            (fromDate, toDate, tourOnly, opts) => apiGet(`/admin/commands/game?fromDate=${_enc(fromDate)}&toDate=${_enc(toDate)}&tourOnly=${_enc(tourOnly)}`, opts),
     updateSiteNotes:         (notes, opts) => apiPut('/admin/site-notes', {notes}, opts),
     clearSiteNotes:          (opts) => apiDel('/admin/site-notes', opts),
 
@@ -3016,10 +3016,10 @@ function renderStats() {
     let tresholdDeck = $('#gameThresholdDeck').val();
     let fromDate = $('#fromDate').val();
     let toDate = $('#toDate').val();
-    let isTourney = $("#onlyTournaments").prop("checked");
+    let tourOnly = $("#onlyTournaments").prop("checked");
 
     if ($('#playerStatsTab').hasClass('active')) {
-        DS.stats(treshold, fromDate, toDate, isTourney, {
+        DS.stats(treshold, fromDate, toDate, tourOnly, {
             callback: (data) => {
                 createStats(data, "#statsGames tbody");
                 filterName('#statsGames tbody tr', 'playerNameFilter', 1);
@@ -3027,34 +3027,34 @@ function renderStats() {
             errorHandler: errorhandler
         });
     } else if($('#deckStatsTab').hasClass('active')) {
-        DS.statsPerDeck(tresholdDeck, fromDate, toDate, isTourney,{
+        DS.statsPerDeck(tresholdDeck, fromDate, toDate, tourOnly,{
             callback: (data) => {
                 createStats(data, "#statsDeckGames tbody");
                 filterName('#statsDeckGames tbody tr', 'deckNameFilter', 1);
             }, errorHandler: errorhandler});
     } else if($('#metricsTab').hasClass('active')) {
-        DS.metricsPlayer(fromDate, toDate, {
+        DS.metricsPlayer(fromDate, toDate,tourOnly, {
             callback: (data) => {
                 createMetrics(data, "#playerMetrics tbody");
             },
             errorHandler: errorhandler
         });
     } else if($('#metricsGameTab').hasClass('active')) {
-        DS.metricsGames(fromDate, toDate,{
+        DS.metricsGames(fromDate, toDate, tourOnly, {
             callback: (data) => {
                 createMetrics(data, "#gamesMetrics tbody");
             },
             errorHandler: errorhandler
         });
     }else if($('#commandsPlayerTab').hasClass('active')) {
-        DS.commandsPlayer(fromDate, toDate,{
+        DS.commandsPlayer(fromDate, toDate, tourOnly, {
             callback: (data) => {
                 createCommands(data, "#playerCommands tbody");
             },
             errorHandler: errorhandler
         });
     } else if($('#commandsGameTab').hasClass('active')) {
-        DS.commandsGame(fromDate, toDate,{
+        DS.commandsGame(fromDate, toDate, tourOnly, {
             callback: (data) => {
                 createCommands(data, "#gameCommands tbody");
             },
