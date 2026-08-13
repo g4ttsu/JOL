@@ -15,7 +15,7 @@
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link px-3 py-2" data-bs-toggle="tab"
-                        data-bs-target="#statGamesPane" type="button" role="tab">
+                        data-bs-target="#statGamesPane" type="button" role="tab" onclick="renderStats()">
                     Statistics
                 </button>
             </li>
@@ -94,6 +94,7 @@
                 <li class="nav-item">
                     <button id="playerStatsTab"
                             class="nav-link active"
+                            onclick="renderStats()"
                             data-bs-toggle="tab"
                             data-bs-target="#playerStatsPane">
                         Player Statistics
@@ -112,7 +113,7 @@
                 <li class="nav-item">
                     <button id="metricsTab"
                             class="nav-link"
-                            onclick="renderMetrics()"
+                            onclick="renderStats()"
                             data-bs-toggle="tab"
                             data-bs-target="#metricsPane">
                         Player Activity
@@ -121,10 +122,28 @@
                 <li class="nav-item">
                     <button id="metricsGameTab"
                             class="nav-link"
-                            onclick="renderMetricsGames()"
+                            onclick="renderStats()"
                             data-bs-toggle="tab"
                             data-bs-target="#metricsGamesPane">
                         Games Activity
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button id="commandsPlayerTab"
+                            class="nav-link"
+                            onclick="renderStats()"
+                            data-bs-toggle="tab"
+                            data-bs-target="#commandsPlayerPane">
+                        Player Commands
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button id="commandsGameTab"
+                            class="nav-link"
+                            onclick="renderStats()"
+                            data-bs-toggle="tab"
+                            data-bs-target="#commandsGamePane">
+                        Game Commands
                     </button>
                 </li>
             </ul>
@@ -221,8 +240,11 @@
                                 <th class="sticky-top bg-white">Command
                                     <i class="bi bi-filter" onclick="sortTable(3, 'playerMetrics')"></i>
                                 </th>
-                                <th class="sticky-top bg-white">Both
+                                <th class="sticky-top bg-white">Chat & Command
                                     <i class="bi bi-filter" onclick="sortTable(4, 'playerMetrics')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Ping
+                                    <i class="bi bi-filter" onclick="sortTable(5, 'playerMetrics')"></i>
                                 </th>
                             </tr>
                             </thead>
@@ -233,10 +255,7 @@
                 </div>
 
                 <!-- Games Metrics -->
-
-                <div class="tab-pane fade"
-                     id="metricsGamesPane">
-
+                <div class="tab-pane fade" id="metricsGamesPane">
                     <div class="overflow-auto" style="max-height:100vh;">
                         <table id="gamesMetrics" class="table table-sm mb-0">
                             <thead>
@@ -254,15 +273,237 @@
                                 <th class="sticky-top bg-white">Command
                                     <i class="bi bi-filter" onclick="sortTable(3, 'gamesMetrics')"></i>
                                 </th>
-                                <th class="sticky-top bg-white">Both
+                                <th class="sticky-top bg-white">Chat & Command
                                     <i class="bi bi-filter" onclick="sortTable(4, 'gamesMetrics')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Ping
+                                    <i class="bi bi-filter" onclick="sortTable(5, 'playerMetrics')"></i>
                                 </th>
                             </tr>
                             </thead>
                             <tbody></tbody>
                         </table>
                     </div>
+                </div>
 
+                <!-- Player Commands -->
+                <div class="tab-pane fade" id="commandsPlayerPane">
+                    <div class="overflow-auto" style="max-height:100vh;">
+                        <table id="playerCommands" class="table table-sm mb-0">
+                            <thead>
+                            <tr>
+                                <th class="sticky-top bg-white">Player
+                                    <input type="text" id="playerCommandFilter"
+                                           oninput="filterName('#playerCommands tbody tr', 'playerCommandFilter', 1)">
+                                    <i class="bi bi-filter" onclick="sortTable(0, 'playerCommands')"></i></th>
+                                <th class="sticky-top bg-white">Timeout
+                                    <i class="bi bi-filter" onclick="sortTable(1, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">VP
+                                    <i class="bi bi-filter" onclick="sortTable(2, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Choose
+                                    <i class="bi bi-filter" onclick="sortTable(3, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Reveal
+                                    <i class="bi bi-filter" onclick="sortTable(4, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Label
+                                    <i class="bi bi-filter" onclick="sortTable(5, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Votes
+                                    <i class="bi bi-filter" onclick="sortTable(6, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Random
+                                    <i class="bi bi-filter" onclick="sortTable(7, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Flip
+                                    <i class="bi bi-filter" onclick="sortTable(8, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Discard
+                                    <i class="bi bi-filter" onclick="sortTable(9, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Draw
+                                    <i class="bi bi-filter" onclick="sortTable(10, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Edge
+                                    <i class="bi bi-filter" onclick="sortTable(11, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Play
+                                    <i class="bi bi-filter" onclick="sortTable(12, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Influence
+                                    <i class="bi bi-filter" onclick="sortTable(13, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Move
+                                    <i class="bi bi-filter" onclick="sortTable(14, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Burn
+                                    <i class="bi bi-filter" onclick="sortTable(15, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Pool
+                                    <i class="bi bi-filter" onclick="sortTable(16, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Blood
+                                    <i class="bi bi-filter" onclick="sortTable(17, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Contest
+                                    <i class="bi bi-filter" onclick="sortTable(18, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Disc
+                                    <i class="bi bi-filter" onclick="sortTable(19, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Capacity
+                                    <i class="bi bi-filter" onclick="sortTable(20, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Unlock
+                                    <i class="bi bi-filter" onclick="sortTable(21, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Lock
+                                    <i class="bi bi-filter" onclick="sortTable(22, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Order
+                                    <i class="bi bi-filter" onclick="sortTable(23, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Show
+                                    <i class="bi bi-filter" onclick="sortTable(24, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Shuffle
+                                    <i class="bi bi-filter" onclick="sortTable(25, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Transfer
+                                    <i class="bi bi-filter" onclick="sortTable(26, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Rfg
+                                    <i class="bi bi-filter" onclick="sortTable(27, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Path
+                                    <i class="bi bi-filter" onclick="sortTable(28, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Sect
+                                    <i class="bi bi-filter" onclick="sortTable(29, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Clan
+                                    <i class="bi bi-filter" onclick="sortTable(30, 'playerCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Open
+                                    <i class="bi bi-filter" onclick="sortTable(31, 'playerCommands')"></i>
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Gamme Commands -->
+                <div class="tab-pane fade" id="commandsGamePane">
+                    <div class="overflow-auto" style="max-height:100vh;">
+                        <table id="gameCommands" class="table table-sm mb-0">
+                            <thead>
+                            <tr>
+                                <th class="sticky-top bg-white">Game
+                                    <input type="text" id="gameCommandFilter"
+                                           oninput="filterName('#gameCommands tbody tr', 'gameCommandFilter', 1)">
+                                    <i class="bi bi-filter" onclick="sortTable(0, 'gameCommands')"></i></th>
+                                <th class="sticky-top bg-white">Timeout
+                                    <i class="bi bi-filter" onclick="sortTable(1, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">VP
+                                    <i class="bi bi-filter" onclick="sortTable(2, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Choose
+                                    <i class="bi bi-filter" onclick="sortTable(3, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Reveal
+                                    <i class="bi bi-filter" onclick="sortTable(4, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Label
+                                    <i class="bi bi-filter" onclick="sortTable(5, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Votes
+                                    <i class="bi bi-filter" onclick="sortTable(6, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Random
+                                    <i class="bi bi-filter" onclick="sortTable(7, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Flip
+                                    <i class="bi bi-filter" onclick="sortTable(8, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Discard
+                                    <i class="bi bi-filter" onclick="sortTable(9, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Draw
+                                    <i class="bi bi-filter" onclick="sortTable(10, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Edge
+                                    <i class="bi bi-filter" onclick="sortTable(11, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Play
+                                    <i class="bi bi-filter" onclick="sortTable(12, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Influence
+                                    <i class="bi bi-filter" onclick="sortTable(13, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Move
+                                    <i class="bi bi-filter" onclick="sortTable(14, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Burn
+                                    <i class="bi bi-filter" onclick="sortTable(15, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Pool
+                                    <i class="bi bi-filter" onclick="sortTable(16, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Blood
+                                    <i class="bi bi-filter" onclick="sortTable(17, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Contest
+                                    <i class="bi bi-filter" onclick="sortTable(18, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Disc
+                                    <i class="bi bi-filter" onclick="sortTable(19, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Capacity
+                                    <i class="bi bi-filter" onclick="sortTable(20, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Unlock
+                                    <i class="bi bi-filter" onclick="sortTable(21, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Lock
+                                    <i class="bi bi-filter" onclick="sortTable(22, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Order
+                                    <i class="bi bi-filter" onclick="sortTable(23, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Show
+                                    <i class="bi bi-filter" onclick="sortTable(24, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Shuffle
+                                    <i class="bi bi-filter" onclick="sortTable(25, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Transfer
+                                    <i class="bi bi-filter" onclick="sortTable(26, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Rfg
+                                    <i class="bi bi-filter" onclick="sortTable(27, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Path
+                                    <i class="bi bi-filter" onclick="sortTable(28, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Sect
+                                    <i class="bi bi-filter" onclick="sortTable(29, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Clan
+                                    <i class="bi bi-filter" onclick="sortTable(30, 'gameCommands')"></i>
+                                </th>
+                                <th class="sticky-top bg-white">Open
+                                    <i class="bi bi-filter" onclick="sortTable(31, 'gameCommands')"></i>
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
                 </div>
 
             </div>

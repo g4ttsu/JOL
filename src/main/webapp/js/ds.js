@@ -90,8 +90,10 @@ const DS = {
     exportPastGamesAsCsv:    (opts) => apiGetText('/admin/export/games.csv', opts),
     stats:                   (treshold, fromDate, toDate, isTourney, opts) => apiPost(`/admin/stats`, {treshold, fromDate, toDate, isTourney}, opts),
     statsPerDeck:            (treshold, fromDate, toDate, isTourney, opts) => apiPost(`/admin/stats/deck`, {treshold, fromDate, toDate, isTourney}, opts),
-    metrics:                 (opts) => apiGet(`/admin/metrics/player`, opts),
-    metricsGames:            (opts) => apiGet(`/admin/metrics/game`, opts),
+    metricsPlayer:           (fromDate, toDate, opts) => apiGet(`/admin/metrics/player?fromDate=${_enc(fromDate)}&toDate=${_enc(toDate)}`, opts),
+    metricsGames:            (fromDate, toDate, opts) => apiGet(`/admin/metrics/game?fromDate=${_enc(fromDate)}&toDate=${_enc(toDate)}`, opts),
+    commandsPlayer:          (fromDate, toDate, opts) => apiGet(`/admin/commands/player?fromDate=${_enc(fromDate)}&toDate=${_enc(toDate)}`, opts),
+    commandsGame:            (fromDate, toDate, opts) => apiGet(`/admin/commands/game?fromDate=${_enc(fromDate)}&toDate=${_enc(toDate)}`, opts),
     updateSiteNotes:         (notes, opts) => apiPut('/admin/site-notes', {notes}, opts),
     clearSiteNotes:          (opts) => apiDel('/admin/site-notes', opts),
 
@@ -350,7 +352,6 @@ function checkVersion(newVersion) {
 function callbackAllGames(data) {
     renderActiveGames(data.games);
     renderPastGames(data.history);
-    renderStats();
 }
 
 $(document).on('shown.bs.tab', '[data-bs-target="#pastGamesPane"]', function () {
@@ -3020,7 +3021,7 @@ function renderStats() {
     if ($('#playerStatsTab').hasClass('active')) {
         DS.stats(treshold, fromDate, toDate, isTourney, {
             callback: (data) => {
-                createStats(data);
+                createStats(data, "#statsGames tbody");
                 filterName('#statsGames tbody tr', 'playerNameFilter', 1);
             },
             errorHandler: errorhandler
@@ -3028,95 +3029,116 @@ function renderStats() {
     } else if($('#deckStatsTab').hasClass('active')) {
         DS.statsPerDeck(tresholdDeck, fromDate, toDate, isTourney,{
             callback: (data) => {
-                createStatsPerDeck(data);
+                createStats(data, "#statsDeckGames tbody");
                 filterName('#statsDeckGames tbody tr', 'deckNameFilter', 1);
             }, errorHandler: errorhandler});
+    } else if($('#metricsTab').hasClass('active')) {
+        DS.metricsPlayer(fromDate, toDate, {
+            callback: (data) => {
+                createMetrics(data, "#playerMetrics tbody");
+            },
+            errorHandler: errorhandler
+        });
+    } else if($('#metricsGameTab').hasClass('active')) {
+        DS.metricsGames(fromDate, toDate,{
+            callback: (data) => {
+                createMetrics(data, "#gamesMetrics tbody");
+            },
+            errorHandler: errorhandler
+        });
+    }else if($('#commandsPlayerTab').hasClass('active')) {
+        DS.commandsPlayer(fromDate, toDate,{
+            callback: (data) => {
+                createCommands(data, "#playerCommands tbody");
+            },
+            errorHandler: errorhandler
+        });
+    } else if($('#commandsGameTab').hasClass('active')) {
+        DS.commandsGame(fromDate, toDate,{
+            callback: (data) => {
+                createCommands(data, "#gameCommands tbody");
+            },
+            errorHandler: errorhandler
+        });
     }
 }
 
-function renderMetrics() {
-    DS.metrics({
-            callback: (data) => {
-                createMetrics(data);
-            },
-            errorHandler: errorhandler
-        });
-}
-
-function renderMetricsGames() {
-    DS.metricsGames({
-            callback: (data) => {
-                createMetricsGames(data);
-            },
-            errorHandler: errorhandler
-        });
-}
-
-function createStatsPerDeck(stats) {
-    let statsGames = $("#statsDeckGames tbody");
-    statsGames.empty();
-    $.each(stats, function (index, deckEntry) {
-        if(deckEntry.length > 0) {
-            let playerRow = $("<tr/>");
-            playerRow.addClass("border-top")
-            let deckName = $("<td/>").text(index);
-            let games = $("<td/>").text(deckEntry[0]);
-            let gw = $("<td/>").text(deckEntry[1]);
-            let vp = $("<td/>").text(deckEntry[2]);
-            let gwRat = $("<td/>").text(deckEntry[3]);
-            let vpRat = $("<td/>").text(deckEntry[4]);
-            playerRow.append(deckName, games, gw, vp, gwRat, vpRat);
-            statsGames.append(playerRow);
-        }
-    })
-}
-function createStats(stats) {
-    let statsGames = $("#statsGames tbody");
+function createStats(stats, target) {
+    let statsGames = $(target);
     statsGames.empty();
     $.each(stats, function (index, playerEntry) {
         if(playerEntry.length > 0) {
-            let playerRow = $("<tr/>");
-            playerRow.addClass("border-top")
-            let playerName = $("<td/>").text(index);
+            let row = $("<tr/>");
+            row.addClass("border-top")
+            let name = $("<td/>").text(index);
             let games = $("<td/>").text(playerEntry[0]);
             let gw = $("<td/>").text(playerEntry[1]);
             let vp = $("<td/>").text(playerEntry[2]);
             let gwRat = $("<td/>").text(playerEntry[3]);
             let vpRat = $("<td/>").text(playerEntry[4]);
-            playerRow.append(playerName, games, gw, vp, gwRat, vpRat);
-            statsGames.append(playerRow);
+            row.append(name, games, gw, vp, gwRat, vpRat);
+            statsGames.append(row);
         }
     })
 }
 
-function createMetrics(data) {
-    let metrics = $("#playerMetrics tbody");
+function createMetrics(data, target) {
+    let metrics = $(target);
     metrics.empty();
     $.each(data, function (index, count) {
-        let playerRow = $("<tr/>");
-        playerRow.addClass("border-top")
-        let playerName = $("<td/>").text(index);
+        let row = $("<tr/>");
+        row.addClass("border-top")
+        let name = $("<td/>").text(index);
         let activity = $("<td/>").text(count[0]);
         let chat = $("<td/>").text(count[1]);
         let command = $("<td/>").text(count[2]);
         let both = $("<td/>").text(count[3]);
-        playerRow.append(playerName, activity, chat, command, both);
-        metrics.append(playerRow);
+        let ping = $("<td/>").text(count[4]);
+        row.append(name, activity, chat, command, both, ping);
+        metrics.append(row);
     })
 }
-function createMetricsGames(data) {
-    let metrics = $("#gamesMetrics tbody");
-    metrics.empty();
+
+function createCommands(data, target) {
+    let commands = $(target);
+    commands.empty();
     $.each(data, function (index, count) {
-        let gameRow = $("<tr/>");
-        gameRow.addClass("border-top")
-        let gameName = $("<td/>").text(index);
-        let activity = $("<td/>").text(count[0]);
-        let chat = $("<td/>").text(count[1]);
-        let command = $("<td/>").text(count[2]);
-        let both = $("<td/>").text(count[3]);
-        gameRow.append(gameName, activity, chat, command, both);
-        metrics.append(gameRow);
+        let row = $("<tr/>");
+        row.addClass("border-top")
+        let name = $("<td/>").text(index);
+        let timeout = $("<td/>").text(count[0]);
+        let vp = $("<td/>").text(count[1]);
+        let choose = $("<td/>").text(count[2]);
+        let reveal = $("<td/>").text(count[3]);
+        let label = $("<td/>").text(count[4]);
+        let votes = $("<td/>").text(count[5]);
+        let random = $("<td/>").text(count[6]);
+        let flip = $("<td/>").text(count[7]);
+        let discard = $("<td/>").text(count[8]);
+        let draw = $("<td/>").text(count[9]);
+        let edge = $("<td/>").text(count[10]);
+        let play = $("<td/>").text(count[11]);
+        let influence = $("<td/>").text(count[12]);
+        let move = $("<td/>").text(count[13]);
+        let burn = $("<td/>").text(count[14]);
+        let pool = $("<td/>").text(count[15]);
+        let blood = $("<td/>").text(count[16]);
+        let contest = $("<td/>").text(count[17]);
+        let disc = $("<td/>").text(count[18]);
+        let capacity = $("<td/>").text(count[19]);
+        let unlock = $("<td/>").text(count[20]);
+        let lock = $("<td/>").text(count[21]);
+        let order = $("<td/>").text(count[22]);
+        let show = $("<td/>").text(count[23]);
+        let shuffle = $("<td/>").text(count[24]);
+        let transfer = $("<td/>").text(count[25]);
+        let rfg = $("<td/>").text(count[26]);
+        let path = $("<td/>").text(count[27]);
+        let sect = $("<td/>").text(count[28]);
+        let clan = $("<td/>").text(count[29]);
+        let open = $("<td/>").text(count[30]);
+        row.append(name, timeout, vp, choose, reveal, label, votes, random, flip, discard, draw, edge, play, influence, move, burn, pool, blood, contest, disc, capacity, unlock, lock, order, show, shuffle, transfer, rfg, path, sect, clan, open);
+        commands.append(row);
     })
 }
 
