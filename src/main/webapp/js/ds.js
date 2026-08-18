@@ -1058,7 +1058,14 @@ function callbackLoadTournamentDetails(data) {
         callback: function(registrations) {
             let list = $("#tourRegisteredPlayers").empty();
             $.each(registrations || [], function(i, reg) {
-                list.append($("<li/>").text(reg.player + (reg.vekn ? " (" + reg.vekn + ")" : "")));
+                list.append(
+                    $("<li/>")
+                        .text(reg.player + (reg.vekn ? " (" + reg.vekn + ")" : ""))
+                        .append(
+                            reg.deck != null
+                                ? $('<i class="bi bi-check-circle-fill ms-2 text-success"></i>')
+                                : "")
+                );
             });
         },
         errorHandler: errorhandler
