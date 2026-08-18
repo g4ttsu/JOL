@@ -115,6 +115,14 @@ public class PlayerService extends PersistedService {
         return INSTANCE;
     }
 
+    public static String getPlayerByVeknId(String veknId) {
+        return INSTANCE.players.entrySet().stream()
+                .filter(entry -> Objects.equals(entry.getValue().getVeknId(), veknId))
+                .map(Map.Entry::getKey)
+                .findFirst()
+                .orElse(null);
+    }
+
     @Override
     protected void persist() {
         if (shouldSkipPersistence()) {

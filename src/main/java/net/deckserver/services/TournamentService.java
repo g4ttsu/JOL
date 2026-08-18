@@ -269,7 +269,7 @@ public class TournamentService extends PersistedService {
                 if (playerName == null || playerName.isEmpty()) continue;
 
                 TournamentPlayer tp = new TournamentPlayer();
-                tp.setName(playerName);
+                tp.setName(Optional.ofNullable(PlayerService.getPlayerByVeknId(playerName)).orElse(playerName));
                 rounds
                     .computeIfAbsent(round, r -> new HashMap<>())
                     .computeIfAbsent(table, t -> new ArrayList<>())
