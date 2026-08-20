@@ -80,6 +80,7 @@ public class TournamentDefinition {
 
     @JsonSetter("rounds")
     public void setRounds(Map<Integer, Map<Integer, List<TournamentPlayer>>> data) {
+        rounds.clear();
         data.forEach((round, tableMap) -> {
             tableMap.forEach((table, players) -> {
                 rounds.put(round, table, players);
@@ -89,6 +90,11 @@ public class TournamentDefinition {
 
     public void resetRounds() {
         rounds.clear();
+    }
+
+    @JsonIgnore
+    public void setTable(int round, int table, List<TournamentPlayer> players) {
+        rounds.put(round, table, players);
     }
 
     @JsonGetter("rounds")

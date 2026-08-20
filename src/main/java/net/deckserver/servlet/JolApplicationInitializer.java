@@ -2,6 +2,7 @@ package net.deckserver.servlet;
 
 import net.deckserver.jobs.GameCleanUp;
 import net.deckserver.jobs.PublicGameBuilder;
+import net.deckserver.jobs.RegistrationReconciliation;
 import net.deckserver.jobs.TournamentJob;
 import net.deckserver.services.*;
 import org.slf4j.Logger;
@@ -30,6 +31,8 @@ public class JolApplicationInitializer implements ServletContextListener {
         scheduler.scheduleAtFixedRate(new PublicGameBuilder(), 1, 1, TimeUnit.MINUTES);
         scheduler.scheduleAtFixedRate(new GameCleanUp(), 1, 1, TimeUnit.MINUTES);
         scheduler.scheduleAtFixedRate(new TournamentJob(), 0, 1, TimeUnit.MINUTES);
+        scheduler.scheduleAtFixedRate(RefreshTokenService::cleanupExpired, 5, 1440, TimeUnit.MINUTES);
+        scheduler.schedule(new RegistrationReconciliation(), 0, TimeUnit.SECONDS);
     }
 
     @Override
@@ -45,6 +48,7 @@ public class JolApplicationInitializer implements ServletContextListener {
         PlayerActivityService.getInstance().shutdown();
         PlayerGameActivityService.getInstance().shutdown();
         PlayerService.getInstance().shutdown();
+        RefreshTokenService.getInstance().shutdown();
         SiteNotesService.getInstance().shutdown();
         SubscriptionService.getInstance().shutdown();
         TournamentService.getInstance().shutdown();

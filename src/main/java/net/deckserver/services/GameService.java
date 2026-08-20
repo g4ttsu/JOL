@@ -117,6 +117,10 @@ public class GameService extends PersistedService {
         return INSTANCE.games.values().stream().filter(info -> info.getOwner().equals(owner)).toList();
     }
 
+    public static List<GameInfo> getGamesByTournament(String tournamentName) {
+        return INSTANCE.games.values().stream().filter(info -> tournamentName.equals(info.getTournamentName())).toList();
+    }
+
     public static List<String> getActiveGames(String owner) {
         return INSTANCE.games.values().stream()
                 .filter(ACTIVE_GAME)
@@ -145,6 +149,8 @@ public class GameService extends PersistedService {
         Path gamePath = DataPaths.path("games", gameId);
         INSTANCE.games.remove(gameName);
         INSTANCE.idToName.remove(gameId);
+        INSTANCE.gameCache.invalidate(gameId);
+        INSTANCE.summaryMap.invalidate(gameName);
         try {
             FileUtils.deleteDirectory(gamePath.toFile());
         } catch (IOException e) {

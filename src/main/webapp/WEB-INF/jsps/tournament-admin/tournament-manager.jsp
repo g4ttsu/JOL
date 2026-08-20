@@ -25,6 +25,7 @@
     </div>
     <div id="finalStartedMsg" class="d-none alert alert-info mt-2">Finals already started — see seating below.</div>
     <div id="importTablesMsg" class="d-none alert mt-2"></div>
+    <div id="createTablesError" class="d-none alert alert-danger mt-2"></div>
     <div id="tourRounds" class="flex-fill overflow-auto mt-2 min-h-0"></div>
     <div id="tourFinal" class="d-none flex-fill overflow-auto min-h-0">
       <span class="h4">Tournament Players</span>
@@ -55,6 +56,35 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         <button type="button" class="btn btn-primary" onclick="importTables()">Import</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="recreateTableModal" tabindex="-1" role="dialog" aria-labelledby="recreateTableModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="recreateTableModalLabel">Recreate Table</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-danger">
+          <strong>This is destructive and cannot be undone.</strong> The existing game
+          <code id="recreateTableGameName"></code> and all of its data (turns, pool, VP) will be
+          permanently deleted and replaced with a new game seated from the CSV below.
+        </div>
+        <p class="text-muted small">Paste CSV data with columns <code>Round</code>, <code>Table</code>, <code>Player</code> — every row must be for this round/table. The header row is required.</p>
+        <textarea id="recreateTableCsv" class="form-control font-monospace" rows="8" placeholder='"Round","Table","Player"&#10;"1","1","PlayerOne"'></textarea>
+        <div class="mt-3">
+          <label for="recreateTableConfirm" class="form-label">Type <code id="recreateTableGameNameEcho"></code> to confirm:</label>
+          <input type="text" id="recreateTableConfirm" class="form-control" autocomplete="off">
+        </div>
+        <div id="recreateTableError" class="d-none alert alert-danger mt-2"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" id="recreateTableSubmit" class="btn btn-danger" disabled onclick="recreateTable()">Recreate Table</button>
       </div>
     </div>
   </div>

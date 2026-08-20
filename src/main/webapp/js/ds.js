@@ -7,16 +7,32 @@ const _ctx = '/jol/api';
 
 function _enc(s) { return encodeURIComponent(s); }
 
+// Access tokens are short-lived; on a 401 we silently exchange the refresh cookie
+// for a new one via /auth/refresh and retry the original call exactly once.
+let _refreshing = null;
+function _refresh() {
+    if (!_refreshing) {
+        _refreshing = fetch(_ctx + '/auth/refresh', { method: 'POST' })
+            .finally(() => { _refreshing = null; });
+    }
+    return _refreshing;
+}
+
 function apiCall(method, path, body, opts) {
     const init = { method, headers: {'Content-Type': 'application/json'} };
     if (body !== null && body !== undefined) init.body = JSON.stringify(body);
     return fetch(_ctx + path, init)
         .then(r => {
+            if (r.status === 401 && !opts?._retried) {
+                return _refresh().then(rr => rr.ok
+                    ? apiCall(method, path, body, Object.assign({}, opts, {_retried: true}))
+                    : Promise.reject(new Error('401: Unauthorized')));
+            }
             if (!r.ok) return r.text().then(msg => { throw new Error(`${r.status}: ${msg || r.statusText}`); });
             if (r.status === 204) return {};
             return r.json();
         })
-        .then(data => opts?.callback && opts.callback(data))
+        .then(data => { if (data !== undefined && opts?.callback) opts.callback(data); })
         .catch(err => opts?.errorHandler && opts.errorHandler(String(err)));
 }
 
@@ -88,8 +104,13 @@ const DS = {
     setMessage:              (message, opts) => apiPost('/admin/message', {message}, opts),
     getVekn:                 (playerName, opts) => apiGet(`/admin/player/${_enc(playerName)}/vekn`, opts),
     exportPastGamesAsCsv:    (opts) => apiGetText('/admin/export/games.csv', opts),
-    stats:                   (treshold, fromDate, toDate, tourOnly, opts) => apiPost(`/admin/stats`, {treshold, fromDate, toDate, tourOnly}, opts),
-    statsPerDeck:            (treshold, fromDate, toDate, tourOnly, opts) => apiPost(`/admin/stats/deck`, {treshold, fromDate, toDate, tourOnly}, opts),
+    statsPerPlayer:          (treshold, fromDate, toDate, isTourney, opts) => apiPost(`/stats/players`, {treshold, fromDate, toDate, isTourney}, opts),
+    statsPerDeck:            (treshold, fromDate, toDate, isTourney, opts) => apiPost(`/stats/decks`, {treshold, fromDate, toDate, isTourney}, opts),
+    statsPerNation:          (treshold, fromDate, toDate, isTourney, opts) => apiPost(`/stats/nations`, {treshold, fromDate, toDate, isTourney}, opts),
+    statsPerOpponent:        (playerName, treshold, fromDate, toDate, isTourney, opts) => apiPost(`/stats/performance/${_enc(playerName)}/players`, {treshold, fromDate, toDate, isTourney}, opts),
+    statsPerGame:            (treshold, fromDate, toDate, isTourney, opts) => apiPost(`/stats/games`, {treshold, fromDate, toDate, isTourney}, opts),
+    statsJol:                (treshold, fromDate, toDate, isTourney, opts) => apiPost(`/stats/jol`, {treshold, fromDate, toDate, isTourney}, opts),
+    statsPerformanceDeck:    (playerName, treshold, fromDate, toDate, isTourney, opts) => apiPost(`/stats/performance/${_enc(playerName)}/decks`, {treshold, fromDate, toDate, isTourney}, opts),
     metricsPlayer:           (fromDate, toDate, tourOnly, opts) => apiGet(`/admin/metrics/player?fromDate=${_enc(fromDate)}&toDate=${_enc(toDate)}&tourOnly=${_enc(tourOnly)}`, opts),
     metricsGames:            (fromDate, toDate, tourOnly, opts) => apiGet(`/admin/metrics/game?fromDate=${_enc(fromDate)}&toDate=${_enc(toDate)}&tourOnly=${_enc(tourOnly)}`, opts),
     commandsPlayer:          (fromDate, toDate, tourOnly, opts) => apiGet(`/admin/commands/player?fromDate=${_enc(fromDate)}&toDate=${_enc(toDate)}&tourOnly=${_enc(tourOnly)}`, opts),
@@ -127,6 +148,7 @@ const DS = {
     publishTournament:       (tourName, opts) => apiPost(`/tournament/${_enc(tourName)}/publish`, {}, opts),
     getRoundSummary:         (tourName, opts) => apiGet(`/tournament/${_enc(tourName)}/round-summary`, opts),
     closeTableGame:          (tourName, round, table, opts) => apiPost(`/tournament/${_enc(tourName)}/round/${round}/table/${table}/close`, {}, opts),
+    recreateTable:           (tourName, round, table, csvData, opts) => apiPost(`/tournament/${_enc(tourName)}/round/${round}/table/${table}/recreate`, {csvData}, opts),
     getStandings:            (tourName, opts) => apiGet(`/tournament/${_enc(tourName)}/standings`, opts),
     getAllRegisteredPlayers:  (tourName, opts) => apiGet(`/tournament/${_enc(tourName)}/registered`, opts),
 };
@@ -965,7 +987,7 @@ function callbackStatusTournament(isActive) {
         DS.getTournamentRounds(nameOfTournament, {
             callback: function(rounds) {
                 callbackTournamentRounds(rounds);
-                DS.getAllRegisteredPlayers(nameOfTournament, {callback: callbackTableManager, errorHandler: errorhandler});
+                DS.getTournamentPlayers(nameOfTournament, {callback: callbackTableManager, errorHandler: errorhandler});
             },
             errorHandler: errorhandler
         });
@@ -1263,6 +1285,13 @@ function callbackRoundSummaryReadOnly(data) {
                     })(round, table));
                 cardBody.append(closeBtn);
             }
+            let recreateBtn = $("<button/>")
+                .addClass("btn btn-sm btn-outline-danger mt-2 w-100")
+                .text("Recreate Table")
+                .on("click", (function(r, t) {
+                    return function() { openRecreateTableModal(tourName, r, t); };
+                })(round, table));
+            cardBody.append(recreateBtn);
             let col = $("<div/>").addClass("col-lg-3 col-md-4 col-6").append(cardBody);
             tableList.append(col);
         });
@@ -1399,6 +1428,9 @@ function saveTables() {
 }
 
 function importTables() {
+    if (!confirm("Import Tournament Tables from CSV? This replaces the current round/table assignments, and if the tournament has already started, existing tables/games for it will be deleted.")) {
+        return;
+    }
     let tournamentSelected = $("#nameOfTournament option:selected").text();
     let csvData = $("#importTablesCsv").val().trim();
     let errorDiv = $("#importTablesError");
@@ -1420,6 +1452,48 @@ function importTables() {
         },
         errorHandler: function(msg) {
             errorDiv.text("Import failed: " + msg).removeClass("d-none");
+        }
+    });
+}
+
+function openRecreateTableModal(tourName, round, table) {
+    let gameName = tourName + ": Round " + round + " - Table " + table;
+    $("#recreateTableModal").data({tourName, round, table, gameName});
+    $("#recreateTableGameName, #recreateTableGameNameEcho").text(gameName);
+    $("#recreateTableCsv").val("");
+    $("#recreateTableConfirm").val("");
+    $("#recreateTableSubmit").prop("disabled", true);
+    $("#recreateTableError").addClass("d-none");
+    new bootstrap.Modal(document.getElementById("recreateTableModal")).show();
+}
+
+$(document).on("input", "#recreateTableConfirm", function() {
+    let expected = $("#recreateTableModal").data("gameName");
+    $("#recreateTableSubmit").prop("disabled", $(this).val() !== expected);
+});
+
+function recreateTable() {
+    let modalData = $("#recreateTableModal").data();
+    let csvData = $("#recreateTableCsv").val().trim();
+    let errorDiv = $("#recreateTableError");
+
+    if (!csvData) {
+        errorDiv.text("Please paste CSV data before recreating.").removeClass("d-none");
+        return;
+    }
+    if ($("#recreateTableConfirm").val() !== modalData.gameName) {
+        errorDiv.text("Confirmation text does not match.").removeClass("d-none");
+        return;
+    }
+    errorDiv.addClass("d-none");
+
+    DS.recreateTable(modalData.tourName, modalData.round, modalData.table, csvData, {
+        callback: function() {
+            bootstrap.Modal.getInstance(document.getElementById("recreateTableModal")).hide();
+            DS.getRoundSummary(modalData.tourName, {callback: callbackRoundSummaryReadOnly, errorHandler: errorhandler});
+        },
+        errorHandler: function(msg) {
+            errorDiv.text("Recreate failed: " + msg).removeClass("d-none");
         }
     });
 }
@@ -1617,6 +1691,8 @@ function callbackSaveButton(isStarted) {
 function createTournamentTables() {
     if (confirm("Are you sure you want to create the Tournament Tables?")) {
         let tournamentSelected = $("#nameOfTournament option:selected").text();
+        let errorDiv = $("#createTablesError");
+        errorDiv.addClass("d-none");
         DS.createTournamentTables(tournamentSelected, {
             callback: function() {
                 let item = $('#tournamentAdminList .tournament-admin-entry[data-name="' + tournamentSelected + '"]');
@@ -1624,7 +1700,9 @@ function createTournamentTables() {
                 item.find('.badge').removeClass('text-bg-secondary').addClass('text-bg-success').text('Active');
                 resetTournamentManager();
             },
-            errorHandler: errorhandler
+            errorHandler: function(msg) {
+                errorDiv.text("Failed to create tables: " + msg).removeClass("d-none");
+            }
         });
     }
 }
@@ -2138,6 +2216,7 @@ function callbackMain(data) {
         renderOnline('onlinePlayers', data.who);
         renderGlobalChat(data.chat);
         renderMyGames("myGames", data.games);
+        renderMyGames("tournamentGames", data.tournament);
         renderMyGames("oustedGames", data.ousted);
         if (data.notes) {
             $("#siteNotesContent").html(data.notes);
@@ -2463,7 +2542,7 @@ function renderMyGames(id, games) {
         }
         gameRow.append(nameRow);
 
-        if (id === "myGames" && gameEntry.predator) {
+        if ((id === "myGames" || id === "tournamentGames") && gameEntry.predator) {
             let pred = gameEntry.players[gameEntry.predator];
             let active = gameEntry.players[gameEntry.activePlayer];
             let prey = gameEntry.players[gameEntry.prey];
@@ -2534,6 +2613,19 @@ function renderActiveGames(games) {
         let timestamp = $("<td/>").text(moment(gameEntry.timestamp).tz("UTC").format("D-MMM HH:mm z"));
         gameRow.append(gameLink, turn, timestamp);
         activeGames.append(gameRow);
+    });
+}
+
+function renderTournamentGames(games) {
+    let tournamentGames = $("#tournamentGames tbody");
+    tournamentGames.empty();
+    $.each(games, function (index, gameEntry) {
+        let gameRow = $("<tr/>");
+        let gameLink = $("<td/>").html(renderGameLink(gameEntry));
+        let turn = $("<td/>").text(gameEntry.turn);
+        let timestamp = $("<td/>").text(moment(gameEntry.timestamp).tz("UTC").format("D-MMM HH:mm z"));
+        gameRow.append(gameLink, turn, timestamp);
+        tournamentGames.append(gameRow);
     });
 }
 
@@ -3005,6 +3097,26 @@ function exportCsv() {
     DS.exportPastGamesAsCsv({callback: (data) => createCsvDownloadLink(data, 'past-games.csv'), errorHandler: errorhandler});
 }
 
+function resetStats() {
+    $('#fromDate').val('');
+    $('#toDate').val('');
+    $('#gameThreshold').val('');
+    $('#gameThresholdDeck').val('');
+    $('#gameThresholdNation').val('');
+    $("#onlyTournaments").prop("checked", false);
+    $("#deckNameFilter").val('');
+    $("#playerNameFilter").val('');
+    $("#nationNameFilter").val('');
+    $("#personalNameFilter").val('');
+    $("#personalDeckNameFilter").val('');
+    $("#personalOpponentNameFilter").val('');
+    $("#personalGamesNameFilter").val('');
+    $("#gameNameFilter").val('');
+    $("#gamePlayerFilter").val('');
+    $("#monthFilter").val('');
+    renderStats();
+}
+
 function renderStatsFor(from, to) {
     $('#fromDate').val(from);
     $('#toDate').val(to);
@@ -3014,12 +3126,13 @@ function renderStatsFor(from, to) {
 function renderStats() {
     let treshold = $('#gameThreshold').val();
     let tresholdDeck = $('#gameThresholdDeck').val();
+    let gameThresholdNation = $('#gameThresholdNation').val();
     let fromDate = $('#fromDate').val();
     let toDate = $('#toDate').val();
-    let tourOnly = $("#onlyTournaments").prop("checked");
+    let isTourney = $("#onlyTournaments").prop("checked");
 
     if ($('#playerStatsTab').hasClass('active')) {
-        DS.stats(treshold, fromDate, toDate, tourOnly, {
+        DS.statsPerPlayer(treshold, fromDate, toDate, isTourney, {
             callback: (data) => {
                 createStats(data, "#statsGames tbody");
                 filterName('#statsGames tbody tr', 'playerNameFilter', 1);
@@ -3027,10 +3140,39 @@ function renderStats() {
             errorHandler: errorhandler
         });
     } else if($('#deckStatsTab').hasClass('active')) {
-        DS.statsPerDeck(tresholdDeck, fromDate, toDate, tourOnly,{
+        DS.statsPerDeck(tresholdDeck, fromDate, toDate, isTourney,{
             callback: (data) => {
                 createStats(data, "#statsDeckGames tbody");
                 filterName('#statsDeckGames tbody tr', 'deckNameFilter', 1);
+            }, errorHandler: errorhandler});
+    } else if($('#nationStatsTab').hasClass('active')) {
+        DS.statsPerNation(gameThresholdNation, fromDate, toDate, isTourney,{
+            callback: (data) => {
+                createStats(data, "#statsNationGames  tbody");
+                filterName('#statsNationGames  tbody tr', 'nationNameFilter', 1);
+            }, errorHandler: errorhandler});
+    } else if($('#personalStatsTab').hasClass('active')) {
+        DS.statsPerOpponent(player, 0, fromDate, toDate, isTourney,{
+            callback: (data) => {
+                createStatsPersonal(data);
+                filterName('#statsPersonalGames tbody tr', 'personalNameFilter', 1);
+            }, errorHandler: errorhandler});
+        DS.statsPerformanceDeck(player, 0, fromDate, toDate, isTourney,{
+            callback: (data) => {
+                createStatsPersonalDeck(data);
+            }
+        })
+    } else if($('#gameStatsTab').hasClass('active')) {
+        DS.statsPerGame(0, fromDate, toDate, isTourney,{
+            callback: (data) => {
+                createStatsGame(data);
+                filterName('#statsGameGames tbody tr', 'gameNameFilter', 1);
+            }, errorHandler: errorhandler});
+    } else if($('#jolStatsTab').hasClass('active')) {
+        DS.statsJol(0, fromDate, toDate, isTourney,{
+            callback: (data) => {
+                createStatsJol(data);
+                filterName('#statsJolGames tbody tr', 'monthFilter', 1);
             }, errorHandler: errorhandler});
     } else if($('#metricsTab').hasClass('active')) {
         DS.metricsPlayer(fromDate, toDate,tourOnly, {
@@ -3063,21 +3205,112 @@ function renderStats() {
     }
 }
 
-function createStats(stats, target) {
-    let statsGames = $(target);
-    statsGames.empty();
-    $.each(stats, function (index, playerEntry) {
-        if(playerEntry.length > 0) {
+function createStats(stats, tableId) {
+    let table = $(tableId);
+    table.empty();
+    $.each(stats, function (index, entry) {
+        if(entry != null) {
             let row = $("<tr/>");
             row.addClass("border-top")
-            let name = $("<td/>").text(index);
-            let games = $("<td/>").text(playerEntry[0]);
-            let gw = $("<td/>").text(playerEntry[1]);
-            let vp = $("<td/>").text(playerEntry[2]);
-            let gwRat = $("<td/>").text(playerEntry[3]);
-            let vpRat = $("<td/>").text(playerEntry[4]);
-            row.append(name, games, gw, vp, gwRat, vpRat);
-            statsGames.append(row);
+            let name = "";
+            if(tableId === "#statsNationGames  tbody") {
+                let flag = entry
+                    ? `<span data-tippy-content="${regionNames.of(index)}" class="fi fi-${index.toLowerCase()} fis"></span>`
+                    : "";
+                name = $("<td/>").text(regionNames.of(index) + " / ").append(flag);
+            } else {
+                name = $("<td/>").text(index);
+            }
+            let games = $("<td/>").text(entry.allGames);
+            let gw = $("<td/>").text(entry.gwCount);
+            let vp = $("<td/>").text(entry.vpCount);
+            let gwRat = $("<td/>").text(entry.winRate);
+            let vpRat = $("<td/>").text(entry.avgVp);
+            let highestVp = $("<td/>").text(entry.highestVp);
+            let uniqueOpp = $("<td/>").text(entry.uniqueOpponents);
+            let mostOpp = $("<td/>").text(entry.mostPlayedOpponent);
+            let maxWinStreak = $("<td/>").text(entry.winStreak);
+            if(tableId === "#statsGames tbody") {
+                row.append(name, games, gw, vp, gwRat, vpRat, highestVp, uniqueOpp, mostOpp, maxWinStreak);
+            } else {
+                row.append(name, games, gw, vp, gwRat, vpRat, highestVp, maxWinStreak);
+            }
+            table.append(row);
+        }
+    })
+}
+
+function createStatsPersonal(stats) {
+    let table = $("#statsPersonalGames tbody");
+    table.empty();
+    $.each(stats, function (index, entry) {
+        let row = $("<tr/>");
+        row.addClass("border-top")
+        let name = $("<td/>").text(entry.opponent);
+        let games = $("<td/>").text(entry.games);
+        let wins = $("<td/>").text(entry.wins);
+        let winRate = $("<td/>").text(entry.winRate);
+        let winOpponent = $("<td/>").text(entry.winOpponent);
+        let winRateOpponent = $("<td/>").text(entry.winRateOpponent);
+        let winOther = $("<td/>").text(entry.winOther);
+        let losses = $("<td/>").text(entry.losses);
+        row.append(name, games, wins, winRate, winOpponent, winRateOpponent, winOther, losses);
+        table.append(row);
+    })
+}
+
+function createStatsPersonalDeck(stats) {
+    let table = $("#statsPersonalDecks tbody");
+    table.empty();
+    $.each(stats, function (index, entry) {
+        let row = $("<tr/>");
+        row.addClass("border-top")
+        let deckName = $("<td/>").text(entry.deckName);
+        let opponentDeckName = $("<td/>").text(entry.opponentDeckName);
+        let gameNames = $("<td/>").text(entry.gameNames);
+        let games = $("<td/>").text(entry.games);
+        let totalWins = $("<td/>").text(entry.totalWins);
+        let totalVP = $("<td/>").text(entry.totalVP);
+        let averageVP = $("<td/>").text(entry.averageVP);
+        let opponentTotalVP = $("<td/>").text(entry.opponentTotalVP);
+        let opponentAverageVP = $("<td/>").text(entry.opponentAverageVP);
+        let vpDifference = $("<td/>").text(entry.vpDifference);
+        row.append(deckName, opponentDeckName, gameNames, games, totalWins, totalVP, averageVP, opponentTotalVP, opponentAverageVP, vpDifference);
+        table.append(row);
+    })
+}
+
+function createStatsJol(stats) {
+    let table = $("#statsJolGames tbody");
+    table.empty();
+    $.each(stats, function (index, entry) {
+        let row = $("<tr/>");
+        row.addClass("border-top")
+        let name = $("<td/>").text(index);
+        let started = $("<td/>").text(entry.gamesStartedPerMonth);
+        let ended = $("<td/>").text(entry.gamesEndedPerMonth);
+        let net =  $("<td/>").text(entry.gamesStartedPerMonth - entry.gamesEndedPerMonth);
+        let wins = $("<td/>").text(entry.winsPerMonth);
+        let winRate = $("<td/>").text(entry.winRate);
+        let vps = $("<td/>").text(entry.vpPerMonth);
+        let avgVp = $("<td/>").text(entry.avgVp);
+        let avgDuration = $("<td/>").text(entry.avgDuration);
+        let bestPlayer = $("<td/>").text(entry.bestPlayer);
+        let bestDeck = $("<td/>").text(entry.bestDeck);
+        let bestNation = "-";
+        if (entry.bestNation && entry.bestNation !== "-") {
+            let parts = entry.bestNation.match(/^([A-Z]{2})\s*\((\d+)\s*GW\)$/);
+            if (parts) {
+                let countryCode = parts[1];
+                let gw = parts[2];
+                let countryName = regionNames.of(countryCode);
+
+                bestNation = $("<td/>")
+                    .append($(`<span data-tippy-content="${countryName}"class="fi fi-${countryCode.toLowerCase()} fis"></span>`))
+                    .append(" " + countryName + " (" + gw + " GW)");
+            }
+        } else {
+            bestNation = $("<td/>").text("-");
         }
     })
 }
@@ -3139,6 +3372,24 @@ function createCommands(data, target) {
         let open = $("<td/>").text(count[30]);
         row.append(name, timeout, vp, choose, reveal, label, votes, random, flip, discard, draw, edge, play, influence, move, burn, pool, blood, contest, disc, capacity, unlock, lock, order, show, shuffle, transfer, rfg, path, sect, clan, open);
         commands.append(row);
+        row.append(name, started, ended, net, wins, winRate, vps, avgVp, avgDuration, bestPlayer, bestDeck, bestNation);
+        table.append(row);
+    })
+}
+
+function createStatsGame(stats) {
+    let table = $("#statsGameGames tbody");
+    table.empty();
+    $.each(stats, function (index, entry) {
+        let row = $("<tr/>");
+        row.addClass("border-top")
+        let gameName = $("<td/>").text(entry.gameName);
+        let players = $("<td/>").text(entry.players);
+        let duration = $("<td/>").text(entry.duration);
+        let isGw = $("<td/>").html(entry.hasGw ? '<i class="bi bi-check-circle text-success"></i>' : '<i class="bi bi-x-circle text-danger"></i>');
+        let vps = $("<td/>").text(entry.vps);
+        row.append(gameName, players, duration, isGw, vps);
+        table.append(row);
     })
 }
 
@@ -3250,4 +3501,61 @@ function filterName(column, id, index) {
             row.style.display = "none";
         }
     });
+}
+
+function durationToSeconds(duration) {
+    const match = duration.match(
+        /(?:(\d+)d)?\s*(?:(\d+)h)?\s*(?:(\d+)m)?\s*(?:(\d+)s)?/
+    );
+
+    if (!match) return 0;
+
+    return Number(match[1] || 0) * 86400
+        + Number(match[2] || 0) * 3600
+        + Number(match[3] || 0) * 60
+        + Number(match[4] || 0);
+}
+
+function sortTableByDuration(columnIndex) {
+    const tbody = document.querySelector("#statsGameGames tbody");
+
+    const rows = Array.from(tbody.querySelectorAll("tr"));
+
+    sortDirection[columnIndex] = !sortDirection[columnIndex];
+
+    rows.sort((a, b) => {
+        const durationA = a.cells[columnIndex].textContent.trim();
+        const durationB = b.cells[columnIndex].textContent.trim();
+
+        if (sortDirection[columnIndex]) {
+            return durationToSeconds(durationA)
+                - durationToSeconds(durationB) // ascending
+        } else {
+            return durationToSeconds(durationB)
+                - durationToSeconds(durationA) // descending
+        }
+    });
+
+    rows.forEach(row => tbody.appendChild(row));
+}
+
+function sortTableByBoolean(columnIndex) {
+    const tbody = document.querySelector("#statsGameGames tbody");
+    const rows = Array.from(tbody.querySelectorAll("tr"));
+
+    sortDirection[columnIndex] = !sortDirection[columnIndex];
+
+    rows.sort((a, b) => {
+        const aValue = a.cells[columnIndex]
+            .querySelector(".bi-check-circle") !== null;
+
+        const bValue = b.cells[columnIndex]
+            .querySelector(".bi-check-circle") !== null;
+
+        return sortDirection[columnIndex]
+            ? Number(aValue) - Number(bValue)
+            : Number(bValue) - Number(aValue);
+    });
+
+    rows.forEach(row => tbody.appendChild(row));
 }
