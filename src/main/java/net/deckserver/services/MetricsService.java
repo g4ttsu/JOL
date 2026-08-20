@@ -7,52 +7,45 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MetricsService {
 
+    private static final Path METRICS_PERSISTENCE_PATH = DataPaths.path("metrics");
+    private static final Path COMMAND_PERSISTENCE_PATH = DataPaths.path("commands");
+
     private static final Logger logger = LoggerFactory.getLogger(MetricsService.class);
 
-    public static List<PlayerMetricDto> load() {
+    public static List<PlayerMetricDto> loadMetrics() {
         logger.info("Loading Metrics from File System");
-        List<PlayerMetricDto> players = new ArrayList<>();
-        Path root = Paths.get("C:\\DEV\\g4ttsu\\JOL\\src\\test\\resources\\data\\metrics"); //TODO change to correct path on tomcat for METRICS
-
         try {
-            players.addAll(Files.walk(root)
+            return Files.walk(METRICS_PERSISTENCE_PATH)
                     .filter(Files::isRegularFile)
                     .filter(path -> path.toString().endsWith(".log"))
                     .flatMap(path -> readMetrics(path).stream())
-                    .toList());
+                    .toList();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return players;
     }
 
     public static List<CommandMetricDto> loadCommands() {
         logger.info("Loading Commands from File System");
-        List<CommandMetricDto> commands = new ArrayList<>();
-        Path root = Paths.get("C:\\DEV\\g4ttsu\\JOL\\src\\test\\resources\\data\\commands"); //TODO change to correct path on tomcat for METRICS
-
         try {
-            commands.addAll(Files.walk(root)
+            return Files.walk(COMMAND_PERSISTENCE_PATH)
                     .filter(Files::isRegularFile)
                     .filter(path -> path.toString().endsWith(".log"))
                     .flatMap(path -> readCommands(path).stream())
-                    .toList());
+                    .toList();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return commands;
     }
 
     public static List<PlayerMetricDto> readMetrics(Path file) {

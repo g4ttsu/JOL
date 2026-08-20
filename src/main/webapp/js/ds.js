@@ -111,10 +111,10 @@ const DS = {
     statsPerGame:            (treshold, fromDate, toDate, isTourney, opts) => apiPost(`/stats/games`, {treshold, fromDate, toDate, isTourney}, opts),
     statsJol:                (treshold, fromDate, toDate, isTourney, opts) => apiPost(`/stats/jol`, {treshold, fromDate, toDate, isTourney}, opts),
     statsPerformanceDeck:    (playerName, treshold, fromDate, toDate, isTourney, opts) => apiPost(`/stats/performance/${_enc(playerName)}/decks`, {treshold, fromDate, toDate, isTourney}, opts),
-    metricsPlayer:           (fromDate, toDate, tourOnly, opts) => apiGet(`/admin/metrics/player?fromDate=${_enc(fromDate)}&toDate=${_enc(toDate)}&tourOnly=${_enc(tourOnly)}`, opts),
-    metricsGames:            (fromDate, toDate, tourOnly, opts) => apiGet(`/admin/metrics/game?fromDate=${_enc(fromDate)}&toDate=${_enc(toDate)}&tourOnly=${_enc(tourOnly)}`, opts),
-    commandsPlayer:          (fromDate, toDate, tourOnly, opts) => apiGet(`/admin/commands/player?fromDate=${_enc(fromDate)}&toDate=${_enc(toDate)}&tourOnly=${_enc(tourOnly)}`, opts),
-    commandsGame:            (fromDate, toDate, tourOnly, opts) => apiGet(`/admin/commands/game?fromDate=${_enc(fromDate)}&toDate=${_enc(toDate)}&tourOnly=${_enc(tourOnly)}`, opts),
+    statsMetricsPlayer:      (fromDate, toDate, isTourney, opts) => apiGet(`/stats/metrics/player?fromDate=${_enc(fromDate)}&toDate=${_enc(toDate)}&tourOnly=${_enc(isTourney)}`, opts),
+    statsMetricsGames:       (fromDate, toDate, isTourney, opts) => apiGet(`/stats/metrics/game?fromDate=${_enc(fromDate)}&toDate=${_enc(toDate)}&tourOnly=${_enc(isTourney)}`, opts),
+    statsCommandsPlayer:     (fromDate, toDate, isTourney, opts) => apiGet(`/stats/commands/player?fromDate=${_enc(fromDate)}&toDate=${_enc(toDate)}&tourOnly=${_enc(isTourney)}`, opts),
+    statsCommandsGame:       (fromDate, toDate, isTourney, opts) => apiGet(`/stats/commands/game?fromDate=${_enc(fromDate)}&toDate=${_enc(toDate)}&tourOnly=${_enc(isTourney)}`, opts),
     updateSiteNotes:         (notes, opts) => apiPut('/admin/site-notes', {notes}, opts),
     clearSiteNotes:          (opts) => apiDel('/admin/site-notes', opts),
 
@@ -3175,28 +3175,28 @@ function renderStats() {
                 filterName('#statsJolGames tbody tr', 'monthFilter', 1);
             }, errorHandler: errorhandler});
     } else if($('#metricsTab').hasClass('active')) {
-        DS.metricsPlayer(fromDate, toDate,tourOnly, {
+        DS.statsMetricsPlayer(fromDate, toDate, isTourney, {
             callback: (data) => {
                 createMetrics(data, "#playerMetrics tbody");
             },
             errorHandler: errorhandler
         });
     } else if($('#metricsGameTab').hasClass('active')) {
-        DS.metricsGames(fromDate, toDate, tourOnly, {
+        DS.statsMetricsGames(fromDate, toDate, isTourney, {
             callback: (data) => {
                 createMetrics(data, "#gamesMetrics tbody");
             },
             errorHandler: errorhandler
         });
     }else if($('#commandsPlayerTab').hasClass('active')) {
-        DS.commandsPlayer(fromDate, toDate, tourOnly, {
+        DS.statsCommandsPlayer(fromDate, toDate, isTourney, {
             callback: (data) => {
                 createCommands(data, "#playerCommands tbody");
             },
             errorHandler: errorhandler
         });
     } else if($('#commandsGameTab').hasClass('active')) {
-        DS.commandsGame(fromDate, toDate, tourOnly, {
+        DS.statsCommandsGame(fromDate, toDate, isTourney, {
             callback: (data) => {
                 createCommands(data, "#gameCommands tbody");
             },
@@ -3316,8 +3316,8 @@ function createStatsJol(stats) {
 }
 
 function createMetrics(data, target) {
-    let metrics = $(target);
-    metrics.empty();
+    let table = $(target);
+    table.empty();
     $.each(data, function (index, count) {
         let row = $("<tr/>");
         row.addClass("border-top")
@@ -3328,7 +3328,7 @@ function createMetrics(data, target) {
         let both = $("<td/>").text(count[3]);
         let ping = $("<td/>").text(count[4]);
         row.append(name, activity, chat, command, both, ping);
-        metrics.append(row);
+        table.append(row);
     })
 }
 
